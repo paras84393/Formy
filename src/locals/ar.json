@@ -1,0 +1,43 @@
+{
+  "appName": "فورمي",
+
+  "untitledForm": "نموذج بدون عنوان",
+
+  "createForm": "إنشاء نموذج",
+
+  "publish": "نشر",
+
+  "preview": "معاينة",
+
+  "settings": "الإعدادات",
+
+  "submit": "إرسال",
+
+  "save": "حفظ",
+
+  "share": "مشاركة",
+
+  "saved": "تم الحفظ",
+
+  "saving": "جارٍ الحفظ...",
+
+  "livePreview": "معاينة مباشرة",
+
+  "createOrSelect": "أنشئ نموذجًا أو اختر واحدًا للبدء",
+
+  "startBuilding": "ابدأ في إنشاء النموذج",
+
+  "emptyDescription": "اضغط على / لإضافة أول سؤال أو استخدم زر +.",
+
+  "searchFields": "ابحث عن الحقول...",
+
+  "addCover": "إضافة صورة غلاف",
+
+  "addLogo": "رفع الشعار",
+
+  "questions": "الأسئلة",
+
+  "question": "السؤال",
+
+  "language": "اللغة"
+}

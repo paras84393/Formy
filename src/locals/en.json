@@ -1,0 +1,43 @@
+{
+  "appName": "Formy",
+
+  "untitledForm": "Untitled Form",
+
+  "createForm": "Create Form",
+
+  "publish": "Publish",
+
+  "preview": "Preview",
+
+  "settings": "Settings",
+
+  "submit": "Submit",
+
+  "save": "Save",
+
+  "share": "Share",
+
+  "saved": "Saved",
+
+  "saving": "Saving...",
+
+  "livePreview": "Live Preview",
+
+  "createOrSelect": "Create or select a form to start building",
+
+  "startBuilding": "Start building your form",
+
+  "emptyDescription": "Press / to instantly add your first question or use the + button.",
+
+  "searchFields": "Search fields...",
+
+  "addCover": "Add Cover Image",
+
+  "addLogo": "Upload Logo",
+
+  "questions": "Questions",
+
+  "question": "Question",
+
+  "language": "Language"
+}

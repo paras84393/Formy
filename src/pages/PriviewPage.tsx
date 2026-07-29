@@ -1,0 +1,174 @@
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useFormStore } from '@/store/formStore';
+import { useEditorStore } from '@/store/editorStore';
+import { FieldRenderer } from '@/components/fields/FieldRenderer';
+import { Button } from '@/components/common/Button';
+import { ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { v4 as uuidv4 } from 'uuid';
+
+export const PreviewPage: React.FC = () => {
+  const { formId } = useParams<{ formId: string }>();
+  const navigate = useNavigate();
+  const { getAllForms, addResponse } = useFormStore();
+  const { formValues, setFieldValue, validationErrors, setValidationErrors } = useEditorStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = getAllForms().find((f) => f.id === formId);
+
+  if (!form) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-gray-500">Form not found</p>
+      </div>
+    );
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Validate form
+      const errors: Record<string, string> = {};
+      form.fields.forEach((field) => {
+        if (field.required && !formValues[field.id]) {
+          errors[field.id] = `${field.label} is required`;
+        }
+      });
+
+      if (Object.keys(errors).length > 0) {
+        setValidationErrors(errors);
+        return;
+      }
+
+      // Add response
+      addResponse({
+        id: uuidv4(),
+        formId: form.id,
+        data: formValues,
+        submittedAt: Date.now(),
+      });
+
+      // Show success message and redirect
+      alert(form.successMessage);
+
+      if (form.redirectUrl) {
+        window.location.href = form.redirectUrl;
+      } else {
+        navigate('/');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6 font-medium"
+        >
+          <ArrowLeft size={18} />
+          Back to Editor
+        </button>
+
+        {/* Form Container */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-lg shadow-lg p-8"
+        >
+      {/* Header */}
+
+<div className="mb-10">
+
+  {/* Cover Image */}
+  {form.coverImage && (
+    <div className="mb-6 overflow-hidden rounded-2xl border border-gray-200">
+      <img
+        src={form.coverImage}
+        alt="Cover"
+        className="w-full h-56 object-cover"
+      />
+    </div>
+  )}
+
+  {/* Logo */}
+  {form.logo && (
+    <div className="mb-5">
+      <img
+        src={form.logo}
+        alt="Logo"
+        className="w-20 h-20 rounded-full object-cover border border-gray-200 bg-white"
+      />
+    </div>
+  )}
+
+  {/* Title */}
+  <h1 className="text-4xl font-bold text-gray-900 mb-3">
+    {form.title || "Untitled Form"}
+  </h1>
+
+  {/* Description */}
+  {form.description && (
+    <p className="text-gray-600 text-lg leading-relaxed">
+      {form.description}
+    </p>
+  )}
+
+</div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {form.fields.map((field, index) => (
+              <motion.div
+                key={field.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <FieldRenderer
+                  field={field}
+                  value={formValues[field.id]}
+                  onChange={(value) => setFieldValue(field.id, value)}
+                  isEditing={false}
+                />
+                {validationErrors[field.id] && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-red-500 text-sm mt-2"
+                  >
+                    {validationErrors[field.id]}
+                  </motion.p>
+                )}
+              </motion.div>
+            ))}
+
+            {/* Submit Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: form.fields.length * 0.05 }}
+              className="pt-4"
+            >
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={handleSubmit}
+                loading={isSubmitting}
+                fullWidth
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit'}
+              </Button>
+            </motion.div>
+          </form>
+        </motion.div>
+      </div>
+    </div>
+  );
+};

@@ -1,0 +1,43 @@
+{
+  "appName": "Formy",
+
+  "untitledForm": "Formulaire sans titre",
+
+  "createForm": "Créer un formulaire",
+
+  "publish": "Publier",
+
+  "preview": "Aperçu",
+
+  "settings": "Paramètres",
+
+  "submit": "Soumettre",
+
+  "save": "Enregistrer",
+
+  "share": "Partager",
+
+  "saved": "Enregistré",
+
+  "saving": "Enregistrement...",
+
+  "livePreview": "Aperçu en direct",
+
+  "createOrSelect": "Créez ou sélectionnez un formulaire",
+
+  "startBuilding": "Commencez à créer votre formulaire",
+
+  "emptyDescription": "Appuyez sur / pour ajouter votre première question ou utilisez le bouton +.",
+
+  "searchFields": "Rechercher des champs...",
+
+  "addCover": "Ajouter une image de couverture",
+
+  "addLogo": "Téléverser un logo",
+
+  "questions": "Questions",
+
+  "question": "Question",
+
+  "language": "Langue"
+}
