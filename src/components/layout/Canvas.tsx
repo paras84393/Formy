@@ -24,123 +24,204 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createField } from '@/utils/fieldFactory';
 import { useDroppable } from '@dnd-kit/core';
 
+// ============================================================================
+// TYPES & CONSTANTS
+// ============================================================================
+
+const ANIMATION = {
+  duration: 0.2,
+  ease: [0.4, 0, 0.2, 1], // easeOutQuad
+};
+
+const COVER_HEIGHT = 240;
+const LOGO_SIZE = 96;
+const LOGO_OVERLAP = 48;
 
 // ============================================================================
-// COVER IMAGE UPLOAD
+// HOOKS - IMAGE UPLOAD LOGIC
 // ============================================================================
 
-const CoverImageSection: React.FC<{
+interface UseImageUploadProps {
+  maxSize: number;
+  onSuccess: (imageUrl: string) => void;
+  onError?: (message: string) => void;
+}
+
+const useImageUpload = ({ maxSize, onSuccess, onError }: UseImageUploadProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      // Validate type
+      if (!file.type.startsWith('image/')) {
+        onError?.('Please select an image file');
+        return;
+      }
+
+      // Validate size
+      if (file.size > maxSize) {
+        const sizeMB = (maxSize / (1024 * 1024)).toFixed(0);
+        onError?.(`Image must be less than ${sizeMB}MB`);
+        return;
+      }
+
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const imageUrl = event.target?.result as string;
+        onSuccess(imageUrl);
+      };
+      reader.readAsDataURL(file);
+    },
+    [maxSize, onSuccess, onError]
+  );
+
+  const triggerFileInput = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  return { fileInputRef, handleFileSelect, triggerFileInput };
+};
+
+// ============================================================================
+// COMPONENTS - HOVER TOOLBAR
+// ============================================================================
+
+interface HoverToolbarProps {
+  isVisible: boolean;
+  onChangeClick: () => void;
+  onRemoveClick: () => void;
+}
+
+const HoverToolbar: React.FC<HoverToolbarProps> = ({
+  isVisible,
+  onChangeClick,
+  onRemoveClick,
+}) => {
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: ANIMATION.duration }}
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm rounded-lg flex items-center justify-center gap-3"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onChangeClick}
+            className="p-2 bg-white rounded-lg hover:bg-gray-50 transition-colors shadow-md"
+            title="Change"
+          >
+            <Upload size={18} className="text-gray-900" />
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onRemoveClick}
+            className="p-2 bg-white rounded-lg hover:bg-gray-50 transition-colors shadow-md"
+            title="Remove"
+          >
+            <X size={18} className="text-gray-900" />
+          </motion.button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// ============================================================================
+// COMPONENTS - UPLOAD BUTTON (REUSABLE)
+// ============================================================================
+
+interface UploadButtonProps {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  variant?: 'pill' | 'icon';
+}
+
+const UploadButton: React.FC<UploadButtonProps> = ({
+  icon,
+  label,
+  onClick,
+  variant = 'pill',
+}) => {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className={`
+        transition-colors duration-150
+        ${
+          variant === 'pill'
+            ? 'inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-sm font-medium text-gray-700'
+            : 'p-2 rounded-lg bg-white hover:bg-gray-50 text-gray-900 shadow-sm'
+        }
+      `}
+      title={label}
+    >
+      {icon}
+      {variant === 'pill' && <span>{label}</span>}
+    </motion.button>
+  );
+};
+
+// ============================================================================
+// COMPONENTS - COVER IMAGE SECTION
+// ============================================================================
+
+interface CoverImageSectionProps {
   coverImage?: string;
   onCoverChange: (imageUrl: string) => void;
   onCoverRemove: () => void;
-}> = ({ coverImage, onCoverChange, onCoverRemove }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  onCoverClick: () => void;
+}
+
+const CoverImageSection: React.FC<CoverImageSectionProps> = ({
+  coverImage,
+  onCoverChange,
+  onCoverRemove,
+  onCoverClick,
+}) => {
   const [isHovering, setIsHovering] = useState(false);
+  const { fileInputRef, handleFileSelect, triggerFileInput } = useImageUpload({
+    maxSize: 5 * 1024 * 1024,
+    onSuccess: onCoverChange,
+  });
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image size must be less than 5MB');
-      return;
-    }
-
-    // Convert to base64 or upload URL
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const imageUrl = event.target?.result as string;
-      onCoverChange(imageUrl);
-    };
-    reader.readAsDataURL(file);
-  };
-  const { t } = useTranslation();
+  if (!coverImage) return null;
 
   return (
-    <div className="mb-8">
-      {coverImage ? (
-        /* Cover Image Display */
-        <motion.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative  overflow-hidden bg-gray-100"
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-        >
-          {/* Image */}
-          <img
-            src={coverImage}
-            alt="Form cover"
-            className="  w-full h-56 object-cover"
-          />
+    <motion.div
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: ANIMATION.duration }}
+      className="relative mb-12 overflow-hidden rounded-lg bg-gray-100"
+      style={{ height: COVER_HEIGHT }}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      <img
+        src={coverImage}
+        alt="Form cover"
+        className="w-full h-full object-cover"
+      />
 
-          {/* Overlay on Hover */}
-          <AnimatePresence>
-            {isHovering && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/40 flex items-center justify-center gap-3"
-              >
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-2 bg-white rounded-lg hover:bg-gray-100 transition-colors"
-                  title="Change cover"
-                >
-                  <Upload size={20} className="text-gray-900" />
-                </motion.button>
+      <HoverToolbar
+        isVisible={isHovering}
+        onChangeClick={triggerFileInput}
+        onRemoveClick={onCoverRemove}
+      />
 
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={onCoverRemove}
-                  className="p-2 bg-white rounded-lg hover:bg-gray-100 transition-colors"
-                  title="Remove cover"
-                >
-                  <X size={20} className="text-gray-900" />
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      ) : (
-        /* Upload Area */
-        <motion.div
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          onClick={() => fileInputRef.current?.click()}
-          className="
-             inline-flex items-center gap-2
-              px-4 py-2
-              rounded-full
-              bg-gray-100
-              hover:bg-gray-200
-              text-sm font-medium
-              text-gray-700
-              transition-all duration-200
-          "
-        >
-          <ImageIcon size={32} className="text-gray-400" />
-          <div className="text-center">
-            <p className="text-sm font-medium text-gray-900">{t("addCover")}</p>
-            <p className="text-xs text-gray-500 mt-1">
-              {t("coverHint")}
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Hidden File Input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -148,115 +229,55 @@ const CoverImageSection: React.FC<{
         onChange={handleFileSelect}
         className="hidden"
       />
-    </div>
+    </motion.div>
   );
 };
 
 // ============================================================================
-// LOGO UPLOAD
+// COMPONENTS - LOGO SECTION
 // ============================================================================
 
-const LogoSection: React.FC<{
+interface LogoSectionProps {
   logo?: string;
   onLogoChange: (imageUrl: string) => void;
   onLogoRemove: () => void;
-}> = ({ logo, onLogoChange, onLogoRemove }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+}
+
+const LogoSection: React.FC<LogoSectionProps> = ({
+  logo,
+  onLogoChange,
+  onLogoRemove,
+}) => {
   const [isHovering, setIsHovering] = useState(false);
-const { t } = useTranslation();
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const { fileInputRef, handleFileSelect, triggerFileInput } = useImageUpload({
+    maxSize: 2 * 1024 * 1024,
+    onSuccess: onLogoChange,
+  });
 
-    if (!file.type.startsWith('image/')) {
-      alert("addLogo");
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Logo size must be less than 2MB');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const imageUrl = event.target?.result as string;
-      onLogoChange(imageUrl);
-    };
-    reader.readAsDataURL(file);
-  };
+  if (!logo) return null;
 
   return (
-    <div className=" flex items-center ">
-      {logo ? (
-        /* Logo Display */
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative"
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-        >
-         <img
-            src={logo}
-            alt="Form logo"
-            className="h-24 w-24 rounded-full border-4 border-white shadow-xl object-cover bg-white"
-          />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: ANIMATION.duration }}
+      className="relative"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      <img
+        src={logo}
+        alt="Form logo"
+        className="h-24 w-24 rounded-full border-4 border-white shadow-lg object-cover bg-white"
+      />
 
-          <AnimatePresence>
-            {isHovering && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center gap-1"
-              >
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-1 bg-white rounded hover:bg-gray-100 transition-colors"
-                  title="Change logo"
-                >
-                  <Upload size={12} className="text-gray-900" />
-                </motion.button>
+      <HoverToolbar
+        isVisible={isHovering}
+        onChangeClick={triggerFileInput}
+        onRemoveClick={onLogoRemove}
+      />
 
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={onLogoRemove}
-                  className="p-1 bg-white rounded hover:bg-gray-100 transition-colors"
-                  title="Remove logo"
-                >
-                  <X size={12} className="text-gray-900" />
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      ) : (
-        /* Upload Button */
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => fileInputRef.current?.click()}
-          className="
-           inline-flex items-center gap-2
-        px-4 py-2
-        rounded-full
-        bg-gray-100
-        hover:bg-gray-200
-        text-sm font-medium
-        text-gray-700
-        transition-all
-          "
-          title="Upload logo"
-        >
-          <Upload size={20} className="text-gray-400" />
-        </motion.button>
-      )}
-
-      {/* Hidden File Input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -264,12 +285,267 @@ const { t } = useTranslation();
         onChange={handleFileSelect}
         className="hidden"
       />
-    </div>
+    </motion.div>
   );
 };
 
 // ============================================================================
-// CANVAS HEADER (UPDATED)
+// COMPONENTS - UPLOAD BUTTONS ROW (FIXED)
+// ============================================================================
+
+interface UploadButtonsRowProps {
+  coverImage?: string;
+  logo?: string;
+  onCoverClick: () => void;
+  onLogoClick: () => void;
+  isVisible: boolean;
+}
+
+const UploadButtonsRow: React.FC<UploadButtonsRowProps> = ({
+  coverImage,
+  logo,
+  onCoverClick,
+  onLogoClick,
+  isVisible,
+}) => {
+  const { t } = useTranslation();
+
+  // Only hide when BOTH images are uploaded
+  if (coverImage && logo) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -4 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: -4 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: ANIMATION.duration }}
+      className="mb-8 flex items-center gap-3"
+    >
+      {/* Cover Button - Hide only if cover exists */}
+      {!coverImage && (
+        <UploadButton
+          icon={<ImageIcon size={18} />}
+          label={t("addCover") || "Add Cover"}
+          onClick={onCoverClick}
+          variant="pill"
+        />
+      )}
+
+      {/* Logo Button - Hide only if logo exists */}
+      {!logo && (
+        <UploadButton
+          icon={<Upload size={18} />}
+          label={t("addLogo") || "Add Logo"}
+          onClick={onLogoClick}
+          variant="pill"
+        />
+      )}
+    </motion.div>
+  );
+};
+// ============================================================================
+// COMPONENTS - MEDIA SECTION (COMBINED)
+// ============================================================================
+
+interface HeaderMediaSectionProps {
+  coverImage?: string;
+  logo?: string;
+  onCoverChange: (imageUrl: string) => void;
+  onCoverRemove: () => void;
+  onLogoChange: (imageUrl: string) => void;
+  onLogoRemove: () => void;
+}
+
+const HeaderMediaSection: React.FC<HeaderMediaSectionProps> = ({
+  coverImage,
+  logo,
+  onCoverChange,
+  onCoverRemove,
+  onLogoChange,
+  onLogoRemove,
+}) => {
+  const { fileInputRef: coverFileRef, triggerFileInput: triggerCoverInput } = useImageUpload({
+    maxSize: 5 * 1024 * 1024,
+    onSuccess: onCoverChange,
+  });
+
+  const { fileInputRef: logoFileRef, triggerFileInput: triggerLogoInput } = useImageUpload({
+    maxSize: 2 * 1024 * 1024,
+    onSuccess: onLogoChange,
+  });
+
+  return (
+    <>
+      {/* Upload Buttons Row - Only visible when no images */}
+      <UploadButtonsRow
+        coverImage={coverImage}
+        logo={logo}
+        onCoverClick={triggerCoverInput}
+        onLogoClick={triggerLogoInput}
+        isVisible={true}
+      />
+
+      {/* Cover Image */}
+      <CoverImageSection
+        coverImage={coverImage}
+        onCoverChange={onCoverChange}
+        onCoverRemove={onCoverRemove}
+        onCoverClick={triggerCoverInput}
+      />
+
+      {/* Logo - Positioned absolutely to overlap cover */}
+      {coverImage && (
+        <div className="relative -mt-12 ml-10 z-10 mb-8">
+          <LogoSection
+            logo={logo}
+            onLogoChange={onLogoChange}
+            onLogoRemove={onLogoRemove}
+          />
+        </div>
+      )}
+
+      {/* Logo without cover - inline */}
+      {!coverImage && logo && (
+        <div className="mb-8">
+          <LogoSection
+            logo={logo}
+            onLogoChange={onLogoChange}
+            onLogoRemove={onLogoRemove}
+          />
+        </div>
+      )}
+
+      {/* Hidden file inputs */}
+      <input
+        ref={coverFileRef}
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              onCoverChange(event.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+          }
+          e.target.value = '';
+        }}
+        className="hidden"
+      />
+
+      <input
+        ref={logoFileRef}
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              onLogoChange(event.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+          }
+          e.target.value = '';
+        }}
+        className="hidden"
+      />
+    </>
+  );
+};
+
+// ============================================================================
+// COMPONENTS - TITLE SECTION
+// ============================================================================
+
+interface TitleSectionProps {
+  title: string;
+  description?: string;
+  fieldCount: number;
+  onTitleChange: (title: string) => void;
+}
+
+const TitleSection: React.FC<TitleSectionProps> = ({
+  title,
+  description,
+  fieldCount,
+  onTitleChange,
+}) => {
+  const { t } = useTranslation();
+  const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleSave = () => {
+    setIsEditing(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: ANIMATION.duration }}
+    >
+      {isEditing ? (
+        <input
+          ref={inputRef}
+          value={title}
+          onChange={(e) => onTitleChange(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSave();
+            if (e.key === 'Escape') {
+              setIsEditing(false);
+            }
+          }}
+          className="w-full bg-transparent outline-none text-5xl font-semibold text-gray-900 border-b-2 border-blue-500 pb-2"
+        />
+      ) : (
+        <div onClick={() => setIsEditing(true)} className="group cursor-text">
+          <div className="flex items-center gap-3">
+            <h1 className="text-5xl font-semibold text-gray-900">
+              {title || t("untitledForm") || "Untitled Form"}
+            </h1>
+            <Edit2
+              size={20}
+              className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+            />
+          </div>
+        </div>
+      )}
+
+      {description && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: ANIMATION.duration, delay: 0.05 }}
+          className="mt-4 text-lg text-gray-600"
+        >
+          {description}
+        </motion.p>
+      )}
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: ANIMATION.duration, delay: 0.1 }}
+        className="mt-4 text-sm font-medium text-gray-500"
+      >
+        {fieldCount} {fieldCount === 1 ? t("question") || "question" : t("questions") || "questions"}
+      </motion.div>
+    </motion.div>
+  );
+};
+
+// ============================================================================
+// CANVAS HEADER (REFACTORED)
 // ============================================================================
 
 const CanvasHeader: React.FC<{
@@ -295,85 +571,28 @@ const CanvasHeader: React.FC<{
   onLogoChange,
   onLogoRemove,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-  const { t } = useTranslation();
-
-  const handleSave = () => {
-    setIsEditing(false);
-  };
-
   return (
-<div className="mb-12">
-  {/* Cover + Logo */}
-  <div className="relative mb-16">
-    <CoverImageSection
-      coverImage={coverImage}
-      onCoverChange={onCoverChange}
-      onCoverRemove={onCoverRemove}
-    />
-
-    {/* Floating Logo */}
-    <div className="absolute left-10 -bottom-12 z-10">
-      <LogoSection
+    <div className="mb-12">
+      {/* Media Section */}
+      <HeaderMediaSection
+        coverImage={coverImage}
         logo={logo}
+        onCoverChange={onCoverChange}
+        onCoverRemove={onCoverRemove}
         onLogoChange={onLogoChange}
         onLogoRemove={onLogoRemove}
       />
-    </div>
-  </div>
 
-  {/* Title Section */}
-  <div>
-    {isEditing ? (
-      <input
-        ref={inputRef}
-        value={title}
-        onChange={(e) => onTitleChange(e.target.value)}
-        onBlur={handleSave}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") handleSave();
-          if (e.key === "Escape") setIsEditing(false);
-        }}
-        className="w-full bg-transparent outline-none text-5xl font-semibold text-gray-900 border-b-2 border-blue-500 pb-2"
+      {/* Title Section */}
+      <TitleSection
+        title={title}
+        description={description}
+        fieldCount={fieldCount}
+        onTitleChange={onTitleChange}
       />
-    ) : (
-      <div
-        onClick={() => setIsEditing(true)}
-        className="group cursor-text"
-      >
-        <div className="flex items-center gap-3">
-          <h1 className="text-5xl font-semibold text-gray-900">
-            {title || t("untitledForm")}
-          </h1>
-
-          <Edit2
-            size={20}
-            className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
-          />
-        </div>
-      </div>
-    )}
-
-    {description && (
-      <p className="mt-4 text-lg text-gray-600">
-        {description}
-      </p>
-    )}
-
-    <div className="mt-4 text-sm font-medium text-gray-500">
-      {fieldCount} {fieldCount === 1 ? t("question") : t("questions")}
     </div>
-  </div>
-</div>
-  )}
+  );
+};
 
 // ============================================================================
 // QUICK INSERT MENU (UNCHANGED)
@@ -386,7 +605,8 @@ const QuickInsertMenu: React.FC<{
 }> = ({ isOpen, onSelect, onClose }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
-const {t} = useTranslation();
+  const { t } = useTranslation();
+
   const categories = useMemo(() => {
     const grouped: Record<string, Array<[string, any]>> = {};
 
@@ -438,7 +658,6 @@ const {t} = useTranslation();
         break;
     }
   };
-  
 
   if (!isOpen) return null;
 
@@ -452,13 +671,13 @@ const {t} = useTranslation();
       onClick={(e) => e.stopPropagation()}
     >
       {/* Search */}
-      <div className="p-3 border-b border-gray-100 sticky top-0 bg-white rounded-t-lg" >
+      <div className="p-3 border-b border-gray-100 sticky top-0 bg-white rounded-t-lg">
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             autoFocus
             type="text"
-            placeholder={t("searchFields")}
+            placeholder={t("searchFields") || "Search fields"}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -526,23 +745,20 @@ const CanvasField: React.FC<{
   const [quickAddRef, setQuickAddRef] = useState<HTMLDivElement | null>(null);
 
   return (
-    <div className="group" >
+    <div className="group">
       {/* Field Card */}
       <motion.div
-  layout
-  initial={{ opacity: 0, y: 12 }}
-  animate={{ opacity:1 , y: 0 }}
-  exit={{ opacity: 0, y: -12 }}
-  transition={{ duration: 0.2 }}
-  onClick={(e) => {
-    e.stopPropagation();
-    onSelect();
-  }}
-  className="cursor-pointer relative"
->
-       
-        
-        
+        layout
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -12 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect();
+        }}
+        className="cursor-pointer relative"
+      >
         <div
           className={`
             bg-white rounded-lg transition-all duration-150
@@ -563,30 +779,25 @@ const CanvasField: React.FC<{
           {index + 1}
         </div>
       </motion.div>
-      
-     
+
       {/* Add Button Between Fields */}
       <div className="flex justify-center py-4 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
         <motion.button
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.96 }}
-          //onClick={onAddAfter}
           onClick={(e) => {
-  e.stopPropagation();
-  onAddAfter();
-}}
+            e.stopPropagation();
+            onAddAfter();
+          }}
           className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
           title="Add question after this"
         >
           <Plus size={18} />
         </motion.button>
       </div>
-      
 
-   
       {/* Quick Insert Menu */}
       <div ref={setQuickAddRef} className="relative">
-        
         <AnimatePresence>
           {showQuickAdd && (
             <QuickInsertMenu
@@ -594,11 +805,8 @@ const CanvasField: React.FC<{
               onSelect={onQuickAdd}
               onClose={() => {}}
             />
-
           )}
-
         </AnimatePresence>
-        
       </div>
     </div>
   );
@@ -613,9 +821,8 @@ const CanvasEmptyState: React.FC<{
   showQuickAdd: boolean;
   onQuickAdd: (type: string) => void;
   onCloseQuickAdd: () => void;
-
 }> = ({ onAddFirst, showQuickAdd, onQuickAdd, onCloseQuickAdd }) => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center py-32">
       <div className="max-w-lg text-center">
@@ -626,19 +833,13 @@ const CanvasEmptyState: React.FC<{
 
         {/* Heading */}
         <h2 className="text-3xl font-semibold tracking-tight text-gray-900">
-          {t("startBuilding")}
+          {t("startBuilding") || "Start Building"}
         </h2>
 
         {/* Description */}
         <p className="mt-4 text-lg leading-7 text-gray-500">
-         
-         
-          {t("emptyDescription")}
-          
+          {t("emptyDescription") || "Add your first question to get started"}
         </p>
-
-        {/* Shortcut Hint */}
-        
 
         {/* Menu */}
         <div className="relative mt-6 flex justify-center">
@@ -671,7 +872,7 @@ const SubmitPreview: React.FC = () => {
         whileTap={{ scale: 0.99 }}
         className="w-full px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors"
       >
-       {t("submit")}
+        {t("submit") || "Submit"}
       </motion.button>
     </motion.div>
   );
@@ -711,7 +912,7 @@ export const Canvas: React.FC = () => {
     reorderFields,
     updateForm,
   } = useFormStore();
-const { t } = useTranslation();
+  const { t } = useTranslation();
   const { selectedFieldId, setSelectedFieldId } = useUIStore();
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas-drop-zone' });
 
@@ -789,7 +990,7 @@ const { t } = useTranslation();
       <div className="flex-1 flex items-center justify-center bg-[#FAFAFA]">
         <div className="text-center space-y-3">
           <p className="text-lg text-gray-600 font-medium">
-           {t("createOrSelect")}
+            {t("createOrSelect") || "Create or select a form"}
           </p>
         </div>
       </div>
@@ -805,10 +1006,10 @@ const { t } = useTranslation();
     >
       <div
         ref={setNodeRef}
-         onClick={() => {
-    setSelectedFieldId(null);
-    setShowQuickAdd(null);
-  }}
+        onClick={() => {
+          setSelectedFieldId(null);
+          setShowQuickAdd(null);
+        }}
         className={`
           flex-1 overflow-auto transition-colors duration-200
           ${isOver ? 'bg-blue-50' : 'bg-white'}

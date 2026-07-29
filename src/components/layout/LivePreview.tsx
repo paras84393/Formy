@@ -3,7 +3,7 @@ import { useFormStore } from '@/store/formStore';
 import { useEditorStore } from '@/store/editorStore';
 import { FieldRenderer } from '@/components/fields/FieldRenderer';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff , X } from 'lucide-react';
+import { Cross, Eye, EyeOff , X } from 'lucide-react';
 import { useUIStore } from "@/store/uiStore";
 
 import { useTranslation } from 'react-i18next';
@@ -34,7 +34,7 @@ export const LivePreview: React.FC = () => {
         className=" -left-6 top-8 bg-white  p-1 rounded-lg "
         title={isExpanded ? 'Hide preview' : 'Show preview'}
       >
-        {isExpanded ? <Button>Hide</Button> : <Eye size={16} />}
+        {isExpanded ? <X size={38} className='bg-black text-white rounded-lg'/> : <Eye size={16} />}
       </button>
 
       {isExpanded && (
@@ -84,7 +84,7 @@ export const LivePreview: React.FC = () => {
 
     {/* Floating Logo */}
     {form.logo && (
-      <div className="absolute left-8 -bottom-10">
+      <div className="absolute left-8 -bottom-12">
         <div className="w-20 h-20 rounded-full bg-white p-1 shadow-xl">
           <img
             src={form.logo}
