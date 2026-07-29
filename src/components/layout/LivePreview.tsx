@@ -34,7 +34,7 @@ export const LivePreview: React.FC = () => {
         className=" -left-6 top-8 bg-white  p-1 rounded-lg "
         title={isExpanded ? 'Hide preview' : 'Show preview'}
       >
-        {isExpanded ? <X size={38} className='bg-black text-white rounded-lg'/> : <Eye size={16} />}
+        {isExpanded ? <X size={38} className='bg-black text-white rounded-full'/> : <Eye size={16} />}
       </button>
 
       {isExpanded && (
