@@ -7,6 +7,7 @@ import { Eye, EyeOff , X } from 'lucide-react';
 import { useUIStore } from "@/store/uiStore";
 
 import { useTranslation } from 'react-i18next';
+import { Button } from '../common/Button';
 
 export const LivePreview: React.FC = () => {
   const form = useFormStore((state) => state.getCurrentForm());
@@ -16,31 +17,31 @@ export const LivePreview: React.FC = () => {
   const {t} = useTranslation();
   if (!form) {
     return (
-      <aside className="w-96 bg-white border-l border-gray-200 p-6 overflow-y-auto flex items-center justify-center">
+      <aside className="w-96 bg-white  p-6 overflow-y-auto flex items-center justify-center">
         <p className="text-gray-500 text-center">Select a form to see preview</p>
       </aside>
     );
   }
 
   return (
-    <aside className={`${isExpanded ? 'w-96' : 'w-12'} bg-white border-l border-gray-200 overflow-visible transition-all duration-300`}>
+    <aside className={`${isExpanded ? 'w-96' : 'w-12'} bg-white  overflow-visible transition-all duration-300`}>
       {/* Toggle Button */}
 
   
       <button
        
         onClick={() => setPreviewOpen(false)}
-        className=" -left-6 top-8 bg-white border border-gray-200 p-1 rounded-lg hover:bg-gray-50"
+        className=" -left-6 top-8 bg-white  p-1 rounded-lg "
         title={isExpanded ? 'Hide preview' : 'Show preview'}
       >
-        {isExpanded ? <EyeOff size={16} /> : <Eye size={16} />}
+        {isExpanded ? <Button>Hide</Button> : <Eye size={16} />}
       </button>
 
       {isExpanded && (
         <div className="h-full overflow-y-auto">
           {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-gray-200 p-4 z-10">
-            <h3 className="text-sm font-bold text-gray-900">👁️ {t("livePreview")}</h3>
+          <div className="sticky top-0 bg-white border-b border-white p-4 z-10">
+            <h3 className="text-sm font-bold text-gray-900"> {t("livePreview")}</h3>
             <p className="text-xs text-gray-500 mt-1">See changes in real-time</p>
             <div className="flex items-center justify-between p-3 border-b">
     <h3 className="font-semibold">
@@ -67,31 +68,36 @@ export const LivePreview: React.FC = () => {
                 {form.description && (
                   <p className="text-gray-600 text-sm">{form.description}</p>
                 )}
-                 {/* Header */}
+       {/* Header */}
+<div className="mb-16">
+  <div className="relative">
+    {/* Cover Image */}
+    {form.coverImage && (
+      <div className="overflow-hidden rounded-2xl">
+        <img
+          src={form.coverImage}
+          alt="Cover"
+          className="w-full h-56 object-cover"
+        />
+      </div>
+    )}
 
-<div className="mb-10">
+    {/* Floating Logo */}
+    {form.logo && (
+      <div className="absolute left-8 -bottom-10">
+        <div className="w-20 h-20 rounded-full bg-white p-1 shadow-xl">
+          <img
+            src={form.logo}
+            alt="Logo"
+            className="w-full h-full rounded-full object-cover"
+          />
+        </div>
+      </div>
+    )}
+  </div>
 
-  {/* Cover Image */}
-  {form.coverImage && (
-    <div className="mb-6 overflow-hidden rounded-2xl border border-gray-200">
-      <img
-        src={form.coverImage}
-        alt="Cover"
-        className="w-full h-56 object-cover"
-      />
-    </div>
-  )}
-
-  {/* Logo */}
-  {form.logo && (
-    <div className="mb-5">
-      <img
-        src={form.logo}
-        alt="Logo"
-        className="w-16 h-16 rounded-full object-cover border border-gray-200 bg-white"
-      />
-    </div>
-  )}
+  {/* Space for overlapping logo */}
+  {form.logo && <div className="h-12" />}
 </div>
                   
               </div>

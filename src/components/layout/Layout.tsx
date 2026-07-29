@@ -7,7 +7,7 @@ import { PropertyPanel } from './PropertyPanel';
 import { AddFieldMenu } from '@/components/fields/AddFieldMenu';
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight , Eye } from "lucide-react";
+import { ChevronLeft, ChevronRight , Eye, Plus } from "lucide-react";
 import { useUIStore } from '@/store/uiStore';
 import { Button } from '../common/Button';
 import { useTranslation } from 'react-i18next';
@@ -15,11 +15,11 @@ import { useTranslation } from 'react-i18next';
 
 
 export const Layout: React.FC = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const {previewOpen,setPreviewOpen} = useUIStore();
   const {t} = useTranslation();
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen ">
       {/* Navbar */}
       <Navbar />
        
@@ -41,8 +41,8 @@ export const Layout: React.FC = () => {
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="
           z-50
-          h-8
-          w-8
+          h-10
+          w-10
           rounded-full
           bg-white
           border
@@ -56,9 +56,15 @@ export const Layout: React.FC = () => {
         "
       >
         {sidebarOpen ? (
-          <ChevronLeft size={28}/>
+          <>
+          <ChevronLeft size={30} />
+         
+          </>
         ) : (
-          <ChevronRight size={28} />
+        <>
+         
+           <span className="text-sm font-medium"> <Plus/></span>
+          </>
         )}
       </button>
 
@@ -67,21 +73,14 @@ export const Layout: React.FC = () => {
         <Canvas />
         
          {/* Property Panel - Bottom Right */}
-        <PropertyPanel />
+       <PropertyPanel /> 
         {/* Right Panel - Live Preview */}
             
          {previewOpen && (
         <LivePreview />
     )}
 
-     {!previewOpen && (
-    <Button 
-        onClick={() => setPreviewOpen(true)}
-        className='text-white font-bold mr-4 ml-2 mb-30'
-    >
-        {t("livePreview")}
-    </Button>
-)}
+
        
       </div>
   <AddFieldMenu/>

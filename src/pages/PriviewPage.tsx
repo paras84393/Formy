@@ -68,13 +68,11 @@ export const PreviewPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6 font-medium"
-        >
-          <ArrowLeft size={18} />
-          Back to Editor
-        </button>
+       <button
+  onClick={() => navigate(`/builder/${form.id}`)}
+>
+  Back to Editor
+</button>
 
         {/* Form Container */}
         <motion.div
@@ -82,31 +80,37 @@ export const PreviewPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-lg shadow-lg p-8"
         >
-      {/* Header */}
-
-<div className="mb-10">
-
-  {/* Cover Image */}
-  {form.coverImage && (
-    <div className="mb-6 overflow-hidden rounded-2xl border border-gray-200">
+ {/* Header */}
+<div className="mb-16">
+  <div className="relative">
+    {/* Cover Image */}
+    {form.coverImage ? (
       <img
         src={form.coverImage}
         alt="Cover"
-        className="w-full h-56 object-cover"
+        className="w-full h-56 object-cover rounded-2xl"
       />
-    </div>
-  )}
+    ) : (
+      <div className="w-full h-56 rounded-2xl bg-gradient-to-r from-orange-100 to-pink-100" />
+    )}
 
-  {/* Logo */}
-  {form.logo && (
-    <div className="mb-5">
-      <img
-        src={form.logo}
-        alt="Logo"
-        className="w-20 h-20 rounded-full object-cover border border-gray-200 bg-white"
-      />
-    </div>
-  )}
+    {/* Floating Logo */}
+    {form.logo && (
+      <div className="absolute left-8 -bottom-10 z-10">
+        <div className="w-20 h-20 rounded-full bg-white p-1 shadow-lg border-4 border-white">
+          <img
+            src={form.logo}
+            alt="Logo"
+            className="w-full h-full rounded-full object-cover"
+          />
+        </div>
+      </div>
+    )}
+  </div>
+
+  {/* Space for overlapping logo */}
+  {form.logo && <div className="h-12" />}
+
 
   {/* Title */}
   <h1 className="text-4xl font-bold text-gray-900 mb-3">

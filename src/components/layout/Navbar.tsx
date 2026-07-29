@@ -360,7 +360,8 @@ export const Navbar: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<number | null>(null);
-
+const {previewOpen,setPreviewOpen} = useUIStore();
+  
   const handleSave = useCallback(async () => {
     if (!form) return;
 
@@ -437,7 +438,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <nav className="bg-white  sticky top-0 z-30">
         <div className="px-6 py-3 flex items-center justify-between">
           {/* Left Section */}
           <motion.div
@@ -520,7 +521,22 @@ export const Navbar: React.FC = () => {
             >
               <Settings size={16} />
             </motion.button>
-
+ 
+   {!previewOpen && (
+  <Button
+    onClick={() => setPreviewOpen(true)}
+    className="
+      
+      right-6
+      top-24
+      z-50
+      text-white
+      font-bold
+    "
+  >
+    {t("livePreview")}
+  </Button>
+)}
             {/* Save Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -544,6 +560,7 @@ export const Navbar: React.FC = () => {
             </motion.button>
           </motion.div>
         </div>
+        
       </nav>
 
       {/* Settings Modal */}

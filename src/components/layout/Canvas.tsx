@@ -70,7 +70,7 @@ const CoverImageSection: React.FC<{
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative rounded-lg overflow-hidden bg-gray-100"
+          className="relative  overflow-hidden bg-gray-100"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
@@ -78,7 +78,7 @@ const CoverImageSection: React.FC<{
           <img
             src={coverImage}
             alt="Form cover"
-            className="  w-full h-48 object-cover"
+            className="  w-full h-56 object-cover"
           />
 
           {/* Overlay on Hover */}
@@ -187,7 +187,7 @@ const { t } = useTranslation();
   };
 
   return (
-    <div className="mb-6 flex items-center gap-4">
+    <div className=" flex items-center ">
       {logo ? (
         /* Logo Display */
         <motion.div
@@ -197,10 +197,10 @@ const { t } = useTranslation();
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
-          <img
+         <img
             src={logo}
             alt="Form logo"
-            className="  h-20 w-20 object-cover rounded-full bg-gray-100 p-1"
+            className="h-24 w-24 rounded-full border-4 border-white shadow-xl object-cover bg-white"
           />
 
           <AnimatePresence>
@@ -311,68 +311,69 @@ const CanvasHeader: React.FC<{
   };
 
   return (
-    <div className="mb-12">
-      {/* Cover Image */}
-      <CoverImageSection
-        coverImage={coverImage}
-        onCoverChange={onCoverChange}
-        onCoverRemove={onCoverRemove}
+<div className="mb-12">
+  {/* Cover + Logo */}
+  <div className="relative mb-16">
+    <CoverImageSection
+      coverImage={coverImage}
+      onCoverChange={onCoverChange}
+      onCoverRemove={onCoverRemove}
+    />
+
+    {/* Floating Logo */}
+    <div className="absolute left-10 -bottom-12 z-10">
+      <LogoSection
+        logo={logo}
+        onLogoChange={onLogoChange}
+        onLogoRemove={onLogoRemove}
       />
+    </div>
+  </div>
 
-      {/* Logo and Title Section */}
-      <div className="flex items-start gap-4 mb-6">
-        {/* Logo */}
-        <LogoSection
-          logo={logo}
-          onLogoChange={onLogoChange}
-          onLogoRemove={onLogoRemove}
-        />
+  {/* Title Section */}
+  <div>
+    {isEditing ? (
+      <input
+        ref={inputRef}
+        value={title}
+        onChange={(e) => onTitleChange(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSave();
+          if (e.key === "Escape") setIsEditing(false);
+        }}
+        className="w-full bg-transparent outline-none text-5xl font-semibold text-gray-900 border-b-2 border-blue-500 pb-2"
+      />
+    ) : (
+      <div
+        onClick={() => setIsEditing(true)}
+        className="group cursor-text"
+      >
+        <div className="flex items-center gap-3">
+          <h1 className="text-5xl font-semibold text-gray-900">
+            {title || t("untitledForm")}
+          </h1>
 
-        {/* Title Section */}
-        <div className="flex-1">
-          {isEditing ? (
-            <input
-              ref={inputRef}
-              value={title}
-              onChange={(e) => onTitleChange(e.target.value)}
-              onBlur={handleSave}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSave();
-                if (e.key === 'Escape') setIsEditing(false);
-              }}
-              className="text-5xl font-semibold text-gray-900 w-full bg-transparent outline-none border-b-2 border-blue-500 pb-2"
-            />
-          ) : (
-            <div
-              onClick={() => setIsEditing(true)}
-              className="group cursor-text"
-            >
-              <div className="flex items-center gap-3">
-                <h1 className="text-5xl font-semibold text-gray-900">
-                  {title || t('untitledForm')}
-                </h1>
-                <Edit2
-                  size={20}
-                  className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                />
-              </div>
-            </div>
-          )}
-
-          {description && (
-            <p className="text-lg text-gray-600 mt-4 mb-4">{description}</p>
-          )}
-          
-
-          <div className="text-sm text-gray-500 font-medium">
-            {fieldCount} {fieldCount === 1 ? t('question') : t('questions')}
-          </div>
-          
+          <Edit2
+            size={20}
+            className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
+          />
         </div>
       </div>
+    )}
+
+    {description && (
+      <p className="mt-4 text-lg text-gray-600">
+        {description}
+      </p>
+    )}
+
+    <div className="mt-4 text-sm font-medium text-gray-500">
+      {fieldCount} {fieldCount === 1 ? t("question") : t("questions")}
     </div>
-  );
-};
+  </div>
+</div>
+  )}
 
 // ============================================================================
 // QUICK INSERT MENU (UNCHANGED)
@@ -530,7 +531,7 @@ const CanvasField: React.FC<{
       <motion.div
   layout
   initial={{ opacity: 0, y: 12 }}
-  animate={{ opacity: 1, y: 0 }}
+  animate={{ opacity:1 , y: 0 }}
   exit={{ opacity: 0, y: -12 }}
   transition={{ duration: 0.2 }}
   onClick={(e) => {
@@ -810,10 +811,10 @@ const { t } = useTranslation();
   }}
         className={`
           flex-1 overflow-auto transition-colors duration-200
-          ${isOver ? 'bg-blue-50' : 'bg-[#FAFAFA]'}
+          ${isOver ? 'bg-blue-50' : 'bg-white'}
         `}
       >
-        <div className="min-h-full p-12 flex items-start justify-center">
+        <div className="min-h-full p-12 bg-white flex items-start justify-center">
           <div className="w-full max-w-2xl">
             {/* Header */}
             <CanvasHeader

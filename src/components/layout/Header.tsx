@@ -1,6 +1,6 @@
 // src/components/layout/Header.tsx
 
-import React, { useState } from 'react';
+import React, { useState,useCallback } from 'react';
 import { useFormStore } from '@/store/formStore';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
@@ -34,10 +34,10 @@ export const Header: React.FC = () => {
     alert('Form published! Share the link with others.');
   };
 
-  const handlePreview = () => {
-    // Navigate to preview page
-    window.open(`/preview/${form?.id}`, '_blank');
-  };
+ const handlePreview = useCallback(() => {
+  if (!form) return;
+  window.location.href = `/preview/${form.id}`;
+}, [form]);
 
   if (!form) {
     return (
