@@ -9,7 +9,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight , Eye, Plus } from "lucide-react";
 import { useUIStore } from '@/store/uiStore';
-import { Button } from '../common/Button';
+
 import { useTranslation } from 'react-i18next';
 
 
@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 export const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const {previewOpen,setPreviewOpen} = useUIStore();
+  
   const {t} = useTranslation();
   return (
     <div className="flex flex-col h-screen ">

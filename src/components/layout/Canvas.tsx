@@ -921,16 +921,14 @@ export const Canvas: React.FC = () => {
   const { t } = useTranslation();
   const { selectedFieldId, setSelectedFieldId } = useUIStore();
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas-drop-zone' });
-const [showSuggestion, setShowSuggestion] = useState(true);
+
   const form = getCurrentForm();
   const suggestion = form
   ? getFormSuggestion(form.title)
   : null;
   const [draggedField, setDraggedField] = useState<Field | null>(null);
   const [showQuickAdd, setShowQuickAdd] = useState<number | null>(null);
-useEffect(() => {
-  setShowSuggestion(true);
-}, [form?.title]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { distance: 8 })
   );
@@ -1044,7 +1042,7 @@ useEffect(() => {
 
 
 {/* Suggested Fields */}
-{suggestion && showSuggestion &&(
+{suggestion && (
   <div className="mb-8 rounded-xl border border-gray-200 bg-gray-50 p-4">
 
     <div className="mb-3 flex items-center justify-between">
@@ -1058,18 +1056,16 @@ useEffect(() => {
       </div>
 
       <button
-      onClick={() => {
-  if (!currentFormId) return;
+        onClick={() => {
+          if (!currentFormId) return;
 
-  suggestion.fields.forEach((field) => {
-    const newField = createField(field.type as any);
-    newField.label = field.label;
+          suggestion.fields.forEach((field) => {
+            const newField = createField(field.type as any);
+            newField.label = field.label;
 
-    addField(currentFormId, newField);
-  });
-
-  setShowSuggestion(false); // 👈 Hide suggestion box
-}}
+            addField(currentFormId, newField);
+          });
+        }}
         className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
       >
          Generate Form

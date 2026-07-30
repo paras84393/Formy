@@ -62,7 +62,31 @@ export const PropertyPanel: React.FC = () => {
   );
 
   return (
-    <aside className="w-80 bg-white border-l border-gray-200 overflow-y-auto">
+    <aside
+  className="
+    fixed
+    bottom-0
+    left-0
+    right-0
+    h-[50vh]
+
+    md:relative
+    md:h-full
+    md:w-80
+
+    bg-white
+    border-t
+    md:border-t-0
+    md:border-l
+
+    overflow-y-auto
+    rounded-t-2xl
+    md:rounded-none
+    shadow-2xl
+    md:shadow-none
+    z-50
+  "
+>
       {/* Header */}
       <div className="sticky top-0 bg-white border-b border-gray-200 p-4 z-10">
 

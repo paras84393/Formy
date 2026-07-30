@@ -7,13 +7,16 @@ interface UIStore {
   showAddFieldMenu: boolean;
   toastMessage: string | null;
   toastType: 'success' | 'error' | 'info' | 'warning';
+  
 
   setSelectedFieldId: (id: string | null) => void;
   setSidebarOpen: (open: boolean) => void;
   setPreviewOpen: (open: boolean) => void;
+  
   setShowAddFieldMenu: (show: boolean) => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
   hideToast: () => void;
+  
 }
 
 export const useUIStore = create<UIStore>((set) => ({
