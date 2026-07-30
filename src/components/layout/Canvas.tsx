@@ -1042,27 +1042,54 @@ export const Canvas: React.FC = () => {
 
 {/* Suggested Fields */}
 {suggestion && (
-  <div className="mb-8 flex flex-wrap items-center gap-2">
-    <span className="text-sm font-medium text-gray-500">
-      ✨ Suggested:
-    </span>
+  <div className="mb-8 rounded-xl border border-gray-200 bg-gray-50 p-4">
 
-    {suggestion.fields.map((field) => (
+    <div className="mb-3 flex items-center justify-between">
+      <div>
+        <p className="text-sm font-semibold text-gray-900">
+          ✨ Smart Suggestions
+        </p>
+        <p className="text-xs text-gray-500">
+          Based on your form title
+        </p>
+      </div>
+
       <button
-        key={field.label}
         onClick={() => {
           if (!currentFormId) return;
 
-          const newField = createField(field.type as any);
-          newField.label = field.label;
+          suggestion.fields.forEach((field) => {
+            const newField = createField(field.type as any);
+            newField.label = field.label;
 
-          addField(currentFormId, newField);
+            addField(currentFormId, newField);
+          });
         }}
-        className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm hover:bg-gray-100 transition"
+        className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
       >
-        + {field.label}
+        ⚡ Generate Form
       </button>
-    ))}
+    </div>
+
+    <div className="flex flex-wrap gap-2">
+      {suggestion.fields.map((field) => (
+        <button
+          key={field.label}
+          onClick={() => {
+            if (!currentFormId) return;
+
+            const newField = createField(field.type as any);
+            newField.label = field.label;
+
+            addField(currentFormId, newField);
+          }}
+          className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm hover:bg-gray-100"
+        >
+          + {field.label}
+        </button>
+      ))}
+    </div>
+
   </div>
 )}
 
