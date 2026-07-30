@@ -24,6 +24,7 @@ interface FormStore {
   updateField: (formId: string, fieldId: string, updates: Partial<Field>) => void;
   reorderFields: (formId: string, fieldIds: string[]) => void;
   duplicateField: (formId: string, fieldId: string) => void;
+  
   insertField: (formId: string, index: number, field: Field) => void;
 
   // Response actions

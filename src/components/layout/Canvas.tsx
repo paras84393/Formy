@@ -23,7 +23,7 @@ import { Plus, Edit2, ChevronDown, Search, Upload, X, Image as ImageIcon } from 
 import { motion, AnimatePresence } from 'framer-motion';
 import { createField } from '@/utils/fieldFactory';
 import { useDroppable } from '@dnd-kit/core';
-
+import { getFormSuggestion } from "@/utils/getFormSuggestion";
 // ============================================================================
 // TYPES & CONSTANTS
 // ============================================================================
@@ -594,6 +594,8 @@ const CanvasHeader: React.FC<{
         fieldCount={fieldCount}
         onTitleChange={onTitleChange}
       />
+
+      
     </div>
   );
 };
@@ -769,7 +771,7 @@ const CanvasField: React.FC<{
             ${
               isSelected
                 ? 'ring-1 ring-blue-500 shadow-sm'
-                : 'hover:bg-gray-50 border border-transparent'
+                : 'hover:bg-gray-50'
             }
           `}
         >
@@ -921,6 +923,9 @@ export const Canvas: React.FC = () => {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas-drop-zone' });
 
   const form = getCurrentForm();
+  const suggestion = form
+  ? getFormSuggestion(form.title)
+  : null;
   const [draggedField, setDraggedField] = useState<Field | null>(null);
   const [showQuickAdd, setShowQuickAdd] = useState<number | null>(null);
 
@@ -1021,19 +1026,45 @@ export const Canvas: React.FC = () => {
       >
         <div className="min-h-full p-12 bg-white flex items-start justify-center">
           <div className="w-full max-w-2xl">
-            {/* Header */}
-            <CanvasHeader
-              title={form.title}
-              description={form.description}
-              fieldCount={form.fields.length}
-              coverImage={form.coverImage}
-              logo={form.logo}
-              onTitleChange={(title) => updateForm(form.id, { title })}
-              onCoverChange={(coverImage) => updateForm(form.id, { coverImage })}
-              onCoverRemove={() => updateForm(form.id, { coverImage: undefined })}
-              onLogoChange={(logo) => updateForm(form.id, { logo })}
-              onLogoRemove={() => updateForm(form.id, { logo: undefined })}
-            />
+        {/* Header */}
+<CanvasHeader
+  title={form.title}
+  description={form.description}
+  fieldCount={form.fields.length}
+  coverImage={form.coverImage}
+  logo={form.logo}
+  onTitleChange={(title) => updateForm(form.id, { title })}
+  onCoverChange={(coverImage) => updateForm(form.id, { coverImage })}
+  onCoverRemove={() => updateForm(form.id, { coverImage: undefined })}
+  onLogoChange={(logo) => updateForm(form.id, { logo })}
+  onLogoRemove={() => updateForm(form.id, { logo: undefined })}
+/>
+
+{/* Suggested Fields */}
+{suggestion && (
+  <div className="mb-8 flex flex-wrap items-center gap-2">
+    <span className="text-sm font-medium text-gray-500">
+      ✨ Suggested:
+    </span>
+
+    {suggestion.fields.map((field) => (
+      <button
+        key={field.label}
+        onClick={() => {
+          if (!currentFormId) return;
+
+          const newField = createField(field.type as any);
+          newField.label = field.label;
+
+          addField(currentFormId, newField);
+        }}
+        className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm hover:bg-gray-100 transition"
+      >
+        + {field.label}
+      </button>
+    ))}
+  </div>
+)}
 
             {/* Fields or Empty State */}
             {form.fields.length === 0 ? (

@@ -31,9 +31,9 @@ export const FieldWrapper: React.FC<FieldWrapperProps> = ({
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (currentFormId && window.confirm('Delete this field?')) {
+   
       removeField(currentFormId, field.id);
-    }
+    
   };
 
   const handleDuplicate = (e: React.MouseEvent) => {
@@ -43,47 +43,66 @@ export const FieldWrapper: React.FC<FieldWrapperProps> = ({
     }
   };
 
-  return (
+ return (
+  <div
+    ref={setNodeRef}
+    style={style}
+    onClick={() => setSelectedFieldId(field.id)}
+    className="group relative"
+  >
+    {/* Hover Actions */}
+    <div className="absolute left-0 top-5 -translate-x-10 flex flex-col items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing rounded-md p-1.5 hover:bg-gray-100 transition"
+      >
+        <GripVertical
+          size={16}
+          className="text-gray-400 hover:text-gray-600"
+        />
+      </div>
+    </div>
+
+    {/* More Actions */}
+    <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+      <button
+        onClick={handleDuplicate}
+        className="rounded-md p-1.5 hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition"
+      >
+        <Copy size={15} />
+      </button>
+
+      <button
+        onClick={handleDelete}
+        className="rounded-md p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-600 transition"
+      >
+        <Trash2 size={15} />
+      </button>
+    </div>
+
+    {/* Left Accent */}
     <div
-      ref={setNodeRef}
-      style={style}
-      onClick={() => setSelectedFieldId(field.id)}
+      className={`absolute left-0 top-4 bottom-4 w-1 rounded-full transition-all duration-200 ${
+        isSelected
+          ? "bg-blue-500 opacity-100"
+          : "bg-transparent group-hover:bg-gray-300"
+      }`}
+    />
+
+    {/* Content */}
+    <div
       className={`
-        relative p-4 rounded-lg border-2 transition-all group
-        ${isSelected ? 'border-blue-500 bg-blue-50 shadow-md' : 'border-gray-200 bg-white'}
-        ${isDragging ? 'shadow-xl ring-2 ring-blue-400' : 'shadow-sm hover:shadow-md'}
+        rounded-xl px-6 py-5 transition-all duration-200
+        ${
+          isSelected
+            ? "bg-blue-50/40 ring-1 ring-blue-200 shadow-sm"
+            : "hover:bg-gray-50"
+        }
+        ${isDragging ? "shadow-xl scale-[1.01]" : ""}
       `}
     >
-      {/* Drag Handle & Actions */}
-      <div className="absolute -top-2 -left-2 -right-2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-t-lg px-2 py-1">
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
-        >
-          <GripVertical size={16} className="text-gray-400" />
-        </div>
-
-        <div className="flex gap-1">
-          <button
-            onClick={handleDuplicate}
-            className="p-1 hover:bg-blue-100 rounded text-gray-600 hover:text-blue-600 transition-colors"
-            title="Duplicate"
-          >
-            <Copy size={14} />
-          </button>
-          <button
-            onClick={handleDelete}
-            className="p-1 hover:bg-red-100 rounded text-gray-600 hover:text-red-600 transition-colors"
-            title="Delete"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-      </div>
-
-      {/* Field Content */}
-      <div className="mt-2">{children}</div>
+      {children}
     </div>
-  );
-};
+  </div>
+)};
