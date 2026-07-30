@@ -24,13 +24,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createField } from '@/utils/fieldFactory';
 import { useDroppable } from '@dnd-kit/core';
 import { getFormSuggestion } from "@/utils/getFormSuggestion";
+
 // ============================================================================
 // TYPES & CONSTANTS
 // ============================================================================
 
 const ANIMATION = {
   duration: 0.2,
-  ease: [0.4, 0, 0.2, 1], // easeOutQuad
+  ease: [0.4, 0, 0.2, 1],
+};
+
+const STAGGER = {
+  container: {
+    staggerChildren: 0.04,
+    delayChildren: 0.1,
+  },
+  item: {
+    duration: 0.3,
+  },
 };
 
 const COVER_HEIGHT = 240;
@@ -55,20 +66,17 @@ const useImageUpload = ({ maxSize, onSuccess, onError }: UseImageUploadProps) =>
       const file = e.target.files?.[0];
       if (!file) return;
 
-      // Validate type
       if (!file.type.startsWith('image/')) {
         onError?.('Please select an image file');
         return;
       }
 
-      // Validate size
       if (file.size > maxSize) {
         const sizeMB = (maxSize / (1024 * 1024)).toFixed(0);
         onError?.(`Image must be less than ${sizeMB}MB`);
         return;
       }
 
-      // Convert to base64
       const reader = new FileReader();
       reader.onload = (event) => {
         const imageUrl = event.target?.result as string;
@@ -108,12 +116,12 @@ const HoverToolbar: React.FC<HoverToolbarProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: ANIMATION.duration }}
+          transition={{ duration: 0.15 }}
           className="absolute inset-0 bg-black/50 backdrop-blur-sm rounded-lg flex items-center justify-center gap-3"
         >
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
             onClick={onChangeClick}
             className="p-2 bg-white rounded-lg hover:bg-gray-50 transition-colors shadow-md"
             title="Change"
@@ -122,8 +130,8 @@ const HoverToolbar: React.FC<HoverToolbarProps> = ({
           </motion.button>
 
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
             onClick={onRemoveClick}
             className="p-2 bg-white rounded-lg hover:bg-gray-50 transition-colors shadow-md"
             title="Remove"
@@ -155,8 +163,8 @@ const UploadButton: React.FC<UploadButtonProps> = ({
 }) => {
   return (
     <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
       onClick={onClick}
       className={`
         transition-colors duration-150
@@ -201,11 +209,11 @@ const CoverImageSection: React.FC<CoverImageSectionProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -4 }}
+      initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -4 }}
-      transition={{ duration: ANIMATION.duration }}
-      className="relative mb-12 overflow-hidden rounded-lg bg-gray-100"
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.25 }}
+      className="relative mb-8 overflow-hidden rounded-lg bg-gray-100"
       style={{ height: COVER_HEIGHT }}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -258,10 +266,10 @@ const LogoSection: React.FC<LogoSectionProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: ANIMATION.duration }}
+      exit={{ opacity: 0, scale: 0.92 }}
+      transition={{ duration: 0.25 }}
       className="relative"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -293,10 +301,6 @@ const LogoSection: React.FC<LogoSectionProps> = ({
 // COMPONENTS - UPLOAD BUTTONS ROW
 // ============================================================================
 
-// ============================================================================
-// COMPONENTS - UPLOAD BUTTONS ROW (FIXED)
-// ============================================================================
-
 interface UploadButtonsRowProps {
   coverImage?: string;
   logo?: string;
@@ -314,18 +318,16 @@ const UploadButtonsRow: React.FC<UploadButtonsRowProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // Only hide when BOTH images are uploaded
   if (coverImage && logo) return null;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -4 }}
-      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: -4 }}
-      exit={{ opacity: 0, y: -4 }}
-      transition={{ duration: ANIMATION.duration }}
-      className="mb-8 flex items-center gap-3"
+      initial={{ opacity: 0, y: -6 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: -6 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.2 }}
+      className="mb-6 flex items-center gap-3"
     >
-      {/* Cover Button - Hide only if cover exists */}
       {!coverImage && (
         <UploadButton
           icon={<ImageIcon size={18} />}
@@ -335,7 +337,6 @@ const UploadButtonsRow: React.FC<UploadButtonsRowProps> = ({
         />
       )}
 
-      {/* Logo Button - Hide only if logo exists */}
       {!logo && (
         <UploadButton
           icon={<Upload size={18} />}
@@ -347,6 +348,7 @@ const UploadButtonsRow: React.FC<UploadButtonsRowProps> = ({
     </motion.div>
   );
 };
+
 // ============================================================================
 // COMPONENTS - MEDIA SECTION (COMBINED)
 // ============================================================================
@@ -380,7 +382,6 @@ const HeaderMediaSection: React.FC<HeaderMediaSectionProps> = ({
 
   return (
     <>
-      {/* Upload Buttons Row - Only visible when no images */}
       <UploadButtonsRow
         coverImage={coverImage}
         logo={logo}
@@ -389,7 +390,6 @@ const HeaderMediaSection: React.FC<HeaderMediaSectionProps> = ({
         isVisible={true}
       />
 
-      {/* Cover Image */}
       <CoverImageSection
         coverImage={coverImage}
         onCoverChange={onCoverChange}
@@ -397,9 +397,8 @@ const HeaderMediaSection: React.FC<HeaderMediaSectionProps> = ({
         onCoverClick={triggerCoverInput}
       />
 
-      {/* Logo - Positioned absolutely to overlap cover */}
       {coverImage && (
-        <div className="relative -mt-12 ml-10 z-10 mb-8">
+        <div className="relative -mt-10 ml-10 z-10 mb-8">
           <LogoSection
             logo={logo}
             onLogoChange={onLogoChange}
@@ -408,7 +407,6 @@ const HeaderMediaSection: React.FC<HeaderMediaSectionProps> = ({
         </div>
       )}
 
-      {/* Logo without cover - inline */}
       {!coverImage && logo && (
         <div className="mb-8">
           <LogoSection
@@ -419,7 +417,6 @@ const HeaderMediaSection: React.FC<HeaderMediaSectionProps> = ({
         </div>
       )}
 
-      {/* Hidden file inputs */}
       <input
         ref={coverFileRef}
         type="file"
@@ -493,9 +490,9 @@ const TitleSection: React.FC<TitleSectionProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -4 }}
+      initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: ANIMATION.duration }}
+      transition={{ duration: 0.25 }}
     >
       {isEditing ? (
         <input
@@ -505,9 +502,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
           onBlur={handleSave}
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleSave();
-            if (e.key === 'Escape') {
-              setIsEditing(false);
-            }
+            if (e.key === 'Escape') setIsEditing(false);
           }}
           className="w-full bg-transparent outline-none text-5xl font-semibold text-gray-900 border-b-2 border-blue-500 pb-2"
         />
@@ -529,8 +524,8 @@ const TitleSection: React.FC<TitleSectionProps> = ({
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: ANIMATION.duration, delay: 0.05 }}
-          className="mt-4 text-lg text-gray-600"
+          transition={{ duration: 0.25, delay: 0.08 }}
+          className="mt-3 text-lg text-gray-600"
         >
           {description}
         </motion.p>
@@ -539,8 +534,8 @@ const TitleSection: React.FC<TitleSectionProps> = ({
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: ANIMATION.duration, delay: 0.1 }}
-        className="mt-4 text-sm font-medium text-gray-500"
+        transition={{ duration: 0.25, delay: 0.12 }}
+        className="mt-3 text-sm font-medium text-gray-500"
       >
         {fieldCount} {fieldCount === 1 ? t("question") || "question" : t("questions") || "questions"}
       </motion.div>
@@ -549,7 +544,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
 };
 
 // ============================================================================
-// CANVAS HEADER (REFACTORED)
+// CANVAS HEADER
 // ============================================================================
 
 const CanvasHeader: React.FC<{
@@ -576,8 +571,7 @@ const CanvasHeader: React.FC<{
   onLogoRemove,
 }) => {
   return (
-    <div className="mb-12">
-      {/* Media Section */}
+    <div className="mb-10">
       <HeaderMediaSection
         coverImage={coverImage}
         logo={logo}
@@ -587,21 +581,18 @@ const CanvasHeader: React.FC<{
         onLogoRemove={onLogoRemove}
       />
 
-      {/* Title Section */}
       <TitleSection
         title={title}
         description={description}
         fieldCount={fieldCount}
         onTitleChange={onTitleChange}
       />
-
-      
     </div>
   );
 };
 
 // ============================================================================
-// QUICK INSERT MENU (UNCHANGED)
+// QUICK INSERT MENU
 // ============================================================================
 
 const QuickInsertMenu: React.FC<{
@@ -669,14 +660,13 @@ const QuickInsertMenu: React.FC<{
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95, y: -8 }}
+      initial={{ opacity: 0, scale: 0.94, y: -6 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95, y: -8 }}
-      transition={{ duration: 0.15 }}
+      exit={{ opacity: 0, scale: 0.94, y: -6 }}
+      transition={{ duration: 0.12 }}
       className="absolute z-50 bg-white rounded-lg shadow-lg border border-gray-200 w-96 max-h-96 flex flex-col"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Search */}
       <div className="p-3 border-b border-gray-100 sticky top-0 bg-white rounded-t-lg">
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -692,7 +682,6 @@ const QuickInsertMenu: React.FC<{
         </div>
       </div>
 
-      {/* Items */}
       <div className="overflow-y-auto flex-1">
         {filteredItems.length === 0 ? (
           <div className="p-6 text-center">
@@ -728,7 +717,7 @@ const QuickInsertMenu: React.FC<{
 };
 
 // ============================================================================
-// CANVAS FIELD (UNCHANGED)
+// CANVAS FIELD
 // ============================================================================
 
 const CanvasField: React.FC<{
@@ -748,17 +737,16 @@ const CanvasField: React.FC<{
   onQuickAdd,
   showQuickAdd,
 }) => {
-  const [quickAddRef, setQuickAddRef] = useState<HTMLDivElement | null>(null);
-
   return (
-    <div className="group">
-      {/* Field Card */}
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.25 }}
+      className="group"
+    >
       <motion.div
-        layout
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -12 }}
-        transition={{ duration: 0.2 }}
         onClick={(e) => {
           e.stopPropagation();
           onSelect();
@@ -780,17 +768,15 @@ const CanvasField: React.FC<{
           </FieldWrapper>
         </div>
 
-        {/* Field Number Badge */}
         <div className="absolute -left-8 top-4 text-xs font-medium text-gray-400">
           {index + 1}
         </div>
       </motion.div>
 
-      {/* Add Button Between Fields */}
-      <div className="flex justify-center py-4 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+      <div className="flex justify-center py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
         <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.96 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.94 }}
           onClick={(e) => {
             e.stopPropagation();
             onAddAfter();
@@ -802,8 +788,7 @@ const CanvasField: React.FC<{
         </motion.button>
       </div>
 
-      {/* Quick Insert Menu */}
-      <div ref={setQuickAddRef} className="relative">
+      <div className="relative">
         <AnimatePresence>
           {showQuickAdd && (
             <QuickInsertMenu
@@ -814,12 +799,12 @@ const CanvasField: React.FC<{
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 // ============================================================================
-// EMPTY STATE (UNCHANGED)
+// EMPTY STATE
 // ============================================================================
 
 const CanvasEmptyState: React.FC<{
@@ -830,38 +815,59 @@ const CanvasEmptyState: React.FC<{
 }> = ({ onAddFirst, showQuickAdd, onQuickAdd, onCloseQuickAdd }) => {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col items-center justify-center py-32">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col items-center justify-center py-32"
+    >
       <div className="max-w-lg text-center">
-        {/* Icon */}
-        <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100">
+        <motion.div
+          initial={{ scale: 0.92, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.25 }}
+          className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100"
+        >
           <span className="text-3xl font-semibold text-gray-700">/</span>
-        </div>
+        </motion.div>
 
-        {/* Heading */}
-        <h2 className="text-3xl font-semibold tracking-tight text-gray-900">
+        <motion.h2
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.05 }}
+          className="text-3xl font-semibold tracking-tight text-gray-900"
+        >
           {t("startBuilding") || "Start Building"}
-        </h2>
+        </motion.h2>
 
-        {/* Description */}
-        <p className="mt-4 text-lg leading-7 text-gray-500">
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.1 }}
+          className="mt-4 text-lg leading-7 text-gray-500"
+        >
           {t("emptyDescription") || "Add your first question to get started"}
-        </p>
+        </motion.p>
 
-        {/* Menu */}
-        <div className="relative mt-6 flex justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25, delay: 0.15 }}
+          className="relative mt-6 flex justify-center"
+        >
           <QuickInsertMenu
             isOpen={showQuickAdd}
             onSelect={onQuickAdd}
             onClose={onCloseQuickAdd}
           />
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 // ============================================================================
-// SUBMIT PREVIEW (UNCHANGED)
+// SUBMIT PREVIEW
 // ============================================================================
 
 const SubmitPreview: React.FC = () => {
@@ -870,8 +876,8 @@ const SubmitPreview: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className="mt-12 pt-8 border-t border-gray-200"
+      transition={{ duration: 0.25 }}
+      className="mt-10 pt-8 border-t border-gray-200"
     >
       <motion.button
         whileHover={{ scale: 1.01 }}
@@ -885,7 +891,7 @@ const SubmitPreview: React.FC = () => {
 };
 
 // ============================================================================
-// DRAG OVERLAY (UNCHANGED)
+// DRAG OVERLAY
 // ============================================================================
 
 const DragOverlayContent: React.FC<{
@@ -895,7 +901,7 @@ const DragOverlayContent: React.FC<{
 
   return (
     <motion.div
-      initial={{ scale: 0.95, opacity: 0.8 }}
+      initial={{ scale: 0.93, opacity: 0.8 }}
       animate={{ scale: 1, opacity: 1 }}
       className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm"
     >
@@ -906,7 +912,7 @@ const DragOverlayContent: React.FC<{
 };
 
 // ============================================================================
-// MAIN CANVAS COMPONENT (UPDATED)
+// MAIN CANVAS COMPONENT
 // ============================================================================
 
 export const Canvas: React.FC = () => {
@@ -923,22 +929,22 @@ export const Canvas: React.FC = () => {
   const { setNodeRef, isOver } = useDroppable({ id: 'canvas-drop-zone' });
 
   const form = getCurrentForm();
-  const suggestion = form
-  ? getFormSuggestion(form.title)
-  : null;
+  const suggestion = form ? getFormSuggestion(form.title) : null;
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [draggedField, setDraggedField] = useState<Field | null>(null);
   const [showQuickAdd, setShowQuickAdd] = useState<number | null>(null);
-useEffect(() => {
-  setShowSuggestion(true);
-}, [form?.title]);
+
+  useEffect(() => {
+    setShowSuggestion(true);
+  }, [form?.title]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { distance: 8 })
   );
 
   const handleDragStart = useCallback((event: any) => {
     const id = event.active.id.toString();
-    if (id.startsWith('palette-')) {
+        if (id.startsWith('palette-')) {
       const type = id.replace('palette-', '');
       setDraggedField(createField(type as any));
     }
@@ -951,7 +957,6 @@ useEffect(() => {
 
       if (!over || !currentFormId) return;
 
-      // New field from palette
       if (active.id.toString().startsWith('palette-')) {
         if (over.id !== 'canvas-drop-zone') return;
 
@@ -963,7 +968,6 @@ useEffect(() => {
         return;
       }
 
-      // Reorder existing fields
       if (active.id !== over.id && form) {
         const activeIndex = form.fields.findIndex((f) => f.id === active.id);
         const overIndex = form.fields.findIndex((f) => f.id === over.id);
@@ -1029,78 +1033,90 @@ useEffect(() => {
       >
         <div className="min-h-full p-12 bg-white flex items-start justify-center">
           <div className="w-full max-w-2xl">
-        {/* Header */}
-<CanvasHeader
-  title={form.title}
-  description={form.description}
-  fieldCount={form.fields.length}
-  coverImage={form.coverImage}
-  logo={form.logo}
-  onTitleChange={(title) => updateForm(form.id, { title })}
-  onCoverChange={(coverImage) => updateForm(form.id, { coverImage })}
-  onCoverRemove={() => updateForm(form.id, { coverImage: undefined })}
-  onLogoChange={(logo) => updateForm(form.id, { logo })}
-  onLogoRemove={() => updateForm(form.id, { logo: undefined })}
-/>
+            {/* Header */}
+            <CanvasHeader
+              title={form.title}
+              description={form.description}
+              fieldCount={form.fields.length}
+              coverImage={form.coverImage}
+              logo={form.logo}
+              onTitleChange={(title) => updateForm(form.id, { title })}
+              onCoverChange={(coverImage) => updateForm(form.id, { coverImage })}
+              onCoverRemove={() => updateForm(form.id, { coverImage: undefined })}
+              onLogoChange={(logo) => updateForm(form.id, { logo })}
+              onLogoRemove={() => updateForm(form.id, { logo: undefined })}
+            />
 
+            {/* Suggested Fields */}
+            {showSuggestion && suggestion && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+                className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-5"
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">
+                      Smart Suggestions
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Based on your form title
+                    </p>
+                  </div>
 
-{/* Suggested Fields */}
-{showSuggestion && suggestion && (
-  <div className="mb-8 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      if (!currentFormId) return;
 
-    <div className="mb-3 flex items-center justify-between">
-      <div>
-        <p className="text-sm font-semibold text-gray-900">
-           Smart Suggestions
-        </p>
-        <p className="text-xs text-gray-500">
-          Based on your form title
-        </p>
-      </div>
+                      suggestion.fields.forEach((field) => {
+                        const newField = createField(field.type as any);
+                        newField.label = field.label;
+                        addField(currentFormId, newField);
+                      });
 
-      <button
-       onClick={() => {
-  if (!currentFormId) return;
+                      setShowSuggestion(false);
+                    }}
+                    className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+                  >
+                    Generate Form
+                  </motion.button>
+                </div>
 
-  suggestion.fields.forEach((field) => {
-    const newField = createField(field.type as any);
-    newField.label = field.label;
+                <div className="flex flex-wrap gap-2">
+                  {suggestion.fields.map((field) => (
+                    <motion.button
+                      key={field.label}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => {
+                        if (!currentFormId) return;
 
-    addField(currentFormId, newField);
-  });
+                        const newField = createField(field.type as any);
+                        newField.label = field.label;
+                        addField(currentFormId, newField);
+                      }}
+                      className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm hover:bg-gray-100 transition-colors"
+                    >
+                      + {field.label}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
-  setShowSuggestion(false);
-}}
-        className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-      >
-         Generate Form
-      </button>
-    </div>
-<div>
-  
-</div>
-    <div className="flex flex-wrap gap-2">
-      {suggestion.fields.map((field) => (
-        <button
-          key={field.label}
-          onClick={() => {
-            if (!currentFormId) return;
-
-            const newField = createField(field.type as any);
-            newField.label = field.label;
-
-            addField(currentFormId, newField);
-          }}
-          className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm hover:bg-gray-100"
-        >
-          + {field.label}
-        </button>
-      ))}
-    </div>
-
-  </div>
-)}
-<span className='text-slate-600 justify-center '>Press / to Enter a field</span>
+            {/* Keyboard Shortcut Hint */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+              className="mb-6 text-xs font-medium text-gray-500 text-center"
+            >
+              Press <kbd className="px-2 py-1 rounded bg-gray-100 border border-gray-300">/</kbd> to add a field
+            </motion.div>
 
             {/* Fields or Empty State */}
             {form.fields.length === 0 ? (
@@ -1116,7 +1132,13 @@ useEffect(() => {
                   items={form.fields.map((f) => f.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <motion.div layout className="space-y-0">
+                  <motion.div
+                    layout
+                    className="space-y-0"
+                    variants={STAGGER.container}
+                    initial="initial"
+                    animate="animate"
+                  >
                     <AnimatePresence mode="popLayout">
                       {form.fields.map((field, index) => (
                         <CanvasField
