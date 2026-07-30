@@ -6,13 +6,12 @@ import { Modal } from '@/components/common/Modal';
 import {
   Save,
   Eye,
-  Share2,
+  MoreVertical,
   Settings,
   Undo2,
   Redo2,
   Download,
   CheckCircle,
-  ChevronDown,
   Copy,
   ExternalLink,
 } from 'lucide-react';
@@ -224,7 +223,7 @@ const StatusIndicator: React.FC<{
             transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
             className="w-3 h-3 border-1.5 border-gray-300 border-t-gray-900 rounded-full"
           />
-          {t("saving")}
+          {t('saving')}
         </motion.div>
       ) : lastSaved ? (
         <motion.div
@@ -235,7 +234,7 @@ const StatusIndicator: React.FC<{
           className="flex items-center gap-2 text-xs text-gray-600 font-medium"
         >
           <CheckCircle size={14} className="text-gray-400" />
-          {t("saved")} {getTimeAgo(lastSaved)}
+          {t('saved')} {getTimeAgo(lastSaved)}
         </motion.div>
       ) : null}
     </AnimatePresence>
@@ -243,14 +242,17 @@ const StatusIndicator: React.FC<{
 };
 
 // ============================================================================
-// PUBLISH DROPDOWN
+// MORE MENU (NEW - Replaces PublishDropdown)
 // ============================================================================
 
-const PublishDropdown: React.FC<{
+const MoreMenu: React.FC<{
   form: any;
+  onSave: () => void;
+  onExport: () => void;
   onPublish: () => void;
   onPreview: () => void;
-}> = ({ form, onPublish, onPreview }) => {
+  onSettingsClick: () => void;
+}> = ({ form, onSave, onExport, onPublish, onPreview, onSettingsClick }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { showToast } = useUIStore();
 
@@ -262,86 +264,140 @@ const PublishDropdown: React.FC<{
     setIsOpen(false);
   }, [shareUrl, showToast]);
 
+  const handleMenuItemClick = (callback: () => void) => {
+    callback();
+    setIsOpen(false);
+  };
+
   return (
     <div className="relative">
+      {/* Trigger Button */}
       <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium text-gray-700"
+        className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+        title="More options"
       >
-        <Share2 size={16} />
-        {t("share")}
-        <ChevronDown
-          size={14}
-          className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
-        />
+        <MoreVertical size={16} />
       </motion.button>
 
+      {/* Dropdown Menu */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -8 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Dropdown Content */}
-            <div className="p-3 space-y-2">
-              {/* Preview Button */}
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                onClick={() => {
-                  onPreview();
-                  setIsOpen(false);
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors text-left text-sm"
-              >
-                <Eye size={16} className="text-gray-600" />
-                <div>
-                  <div className="font-medium text-gray-900">{t("preview")}</div>
-                  <div className="text-xs text-gray-500">See how it looks</div>
-                </div>
-              </motion.button>
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40"
+              onClick={() => setIsOpen(false)}
+            />
 
-              {/* Publish Button */}
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                onClick={() => {
-                  onPublish();
-                  setIsOpen(false);
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors text-left text-sm"
-              >
-                <ExternalLink size={16} className="text-gray-600" />
-                <div>
-                  <div className="font-medium text-gray-900">
-                    {form.published ? 'Update' : t('publish')}
+            {/* Menu */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -8 }}
+              transition={{ duration: 0.15 }}
+              className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-2 space-y-1">
+                {/* Live Preview */}
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  onClick={() => handleMenuItemClick(onPreview)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors text-left text-sm text-gray-900"
+                >
+                  <Eye size={16} className="text-gray-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-medium">{t('preview')}</div>
+                    <div className="text-xs text-gray-500">See how it looks</div>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {form.published ? 'Refresh link' : 'Make it live'}
-                  </div>
-                </div>
-              </motion.button>
+                </motion.button>
 
-              {/* Copy Link Button */}
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                onClick={handleCopyLink}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors text-left text-sm border-t border-gray-100 mt-2 pt-3"
-              >
-                <Copy size={16} className="text-gray-600" />
-                <div>
-                  <div className="font-medium text-gray-900">Copy link</div>
-                  <div className="text-xs text-gray-500 truncate">
-                    {shareUrl.replace('https://', '')}
+                {/* Save */}
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  onClick={() => handleMenuItemClick(onSave)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors text-left text-sm text-gray-900"
+                >
+                  <Save size={16} className="text-gray-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-medium">{t('save')}</div>
+                    <div className="text-xs text-gray-500">Save changes</div>
+                  </div>
+                </motion.button>
+
+                {/* Export JSON */}
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  onClick={() => handleMenuItemClick(onExport)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors text-left text-sm text-gray-900"
+                >
+                  <Download size={16} className="text-gray-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-medium">Export JSON</div>
+                    <div className="text-xs text-gray-500">Download form data</div>
+                  </div>
+                </motion.button>
+
+                {/* Publish */}
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  onClick={() => handleMenuItemClick(onPublish)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors text-left text-sm text-gray-900"
+                >
+                  <ExternalLink size={16} className="text-gray-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-medium">
+                      {form.published ? 'Update' : t('publish')}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {form.published ? 'Refresh link' : 'Make it live'}
+                    </div>
+                  </div>
+                </motion.button>
+
+                {/* Copy Link */}
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  onClick={() => handleMenuItemClick(handleCopyLink)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors text-left text-sm text-gray-900 border-t border-gray-100 mt-2 pt-2"
+                >
+                  <Copy size={16} className="text-gray-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-medium">Copy link</div>
+                    <div className="text-xs text-gray-500 truncate">
+                      {shareUrl.replace('https://', '')}
+                    </div>
+                  </div>
+                </motion.button>
+
+                {/* Settings */}
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  onClick={() => handleMenuItemClick(onSettingsClick)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors text-left text-sm text-gray-900"
+                >
+                  <Settings size={16} className="text-gray-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-medium">{t('settings')}</div>
+                    <div className="text-xs text-gray-500">Form settings</div>
+                  </div>
+                </motion.button>
+
+                {/* Language Switcher Divider */}
+                <div className="border-t border-gray-100 mt-2 pt-2">
+                  <div className="px-3 py-2">
+                    <LanguageSwitcher />
                   </div>
                 </div>
-              </motion.button>
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
@@ -354,14 +410,17 @@ const PublishDropdown: React.FC<{
 
 export const Navbar: React.FC = () => {
   const { getCurrentForm, updateForm, undo, redo } = useFormStore();
-  const { showToast } = useUIStore();
+  const { showToast, previewOpen, setPreviewOpen } = useUIStore();
   const form = getCurrentForm();
 
   const [showSettings, setShowSettings] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<number | null>(null);
-const {previewOpen,setPreviewOpen} = useUIStore();
-  
+
+  // ========================================================================
+  // Handlers (Reused from original)
+  // ========================================================================
+
   const handleSave = useCallback(async () => {
     if (!form) return;
 
@@ -438,41 +497,52 @@ const {previewOpen,setPreviewOpen} = useUIStore();
 
   return (
     <>
-      <nav className="bg-white  sticky top-0 z-30">
-        <div className="px-6 py-3 flex items-center justify-between">
-          {/* Left Section */}
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-30">
+        <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+          {/* ===================================================================
+              LEFT SECTION: Logo + Form Title
+              =================================================================== */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-6 min-w-0"
+            className="flex items-center gap-3 sm:gap-6 min-w-0 flex-shrink-0"
           >
             {/* Logo */}
-            <div className="text-lg font-bold text-gray-900">{t("appName")}</div>
+            <div className="text-lg font-bold text-gray-900 whitespace-nowrap">
+              {t('appName')}
+            </div>
 
-            {/* Form Title */}
-            <div className="hidden sm:block border-l border-gray-200 pl-6">
-              <h1 className="text-sm font-semibold text-gray-900 truncate">
-                {form.title || t('untitledForm')}
-              </h1>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {form.fields.length} {form.fields.length === 1 ? t('question') : t('questions')}
-              </p>
+            {/* Form Title (Desktop only) */}
+            <div className="hidden lg:flex border-l border-gray-200 pl-6">
+              <div className="min-w-0">
+                <h1 className="text-sm font-semibold text-gray-900 truncate">
+                  {form.title || t('untitledForm')}
+                </h1>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {form.fields.length}{' '}
+                  {form.fields.length === 1 ? t('question') : t('questions')}
+                </p>
+              </div>
             </div>
           </motion.div>
 
-          {/* Center Section - Status */}
-          <div className="flex-1 flex justify-center">
+          {/* ===================================================================
+              CENTER SECTION: Status Indicator (Desktop only)
+              =================================================================== */}
+          <div className="hidden lg:flex flex-1 justify-center">
             <StatusIndicator isSaving={isSaving} lastSaved={lastSaved} />
           </div>
 
-          {/* Right Section - Actions */}
+          {/* ===================================================================
+              RIGHT SECTION: Controls
+              =================================================================== */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2"
+            className="flex items-center gap-1 ml-auto"
           >
-            {/* History Controls */}
-            <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
+            {/* Undo / Redo (Always visible) */}
+            <div className="flex items-center gap-1">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -492,75 +562,101 @@ const {previewOpen,setPreviewOpen} = useUIStore();
                 <Redo2 size={16} />
               </motion.button>
             </div>
+            {/* Mobile Live Preview */}
+{!previewOpen && (
+  <motion.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    onClick={() => setPreviewOpen(true)}
+    className="lg:hidden p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+    title="Live Preview"
+  >
+    <Eye size={18} />
+  </motion.button>
+)}
 
-            {/* Export */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleExport}
-              title="Export as JSON"
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
-            >
-              <Download size={16} />
-            </motion.button>
+            {/* Desktop Actions (lg and above) */}
+            <div className="hidden lg:flex items-center gap-1 border-l border-gray-200 pl-2">
+              {/* Export */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleExport}
+                title="Export as JSON"
+                className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+              >
+                <Download size={16} />
+              </motion.button>
 
-            {/* Share Dropdown */}
-            <PublishDropdown
+              {/* Settings */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowSettings(true)}
+                title="Settings"
+                className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+              >
+                <Settings size={16} />
+              </motion.button>
+
+              {/* Live Preview Button */}
+{!previewOpen && (
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    onClick={() => setPreviewOpen(true)}
+    className="flex items-center px-3 py-2 mx-1 bg-blue-50 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors"
+  >
+    <Eye size={16} className="mr-2" />
+    <span className="hidden sm:inline">
+      {t("livePreview")}
+    </span>
+  </motion.button>
+)}
+
+              {/* Save Button */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
+              >
+                {isSaving ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: 'linear',
+                    }}
+                    className="w-4 h-4 border-1.5 border-white border-t-transparent rounded-full inline"
+                  />
+                ) : (
+                  <>
+                    <Save size={14} className="inline mr-2" />
+                    {t('save')}
+                  </>
+                )}
+              </motion.button>
+            </div>
+
+            {/* More Menu (Always visible, contains desktop actions on mobile) */}
+            <MoreMenu
               form={form}
+              onSave={handleSave}
+              onExport={handleExport}
               onPublish={handlePublish}
               onPreview={handlePreview}
+              onSettingsClick={() => setShowSettings(true)}
             />
-
-            {/* Settings */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowSettings(true)}
-              title="Settings"
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
-            >
-              <Settings size={16} />
-            </motion.button>
- 
-   {!previewOpen && (
-  <Button
-    onClick={() => setPreviewOpen(true)}
-    className="
-      
-      right-6
-      top-24
-      z-50
-      text-white
-      font-bold
-    "
-  >
-    {t("livePreview")}
-  </Button>
-)}
-            {/* Save Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleSave}
-              disabled={isSaving}
-              className="ml-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
-            >
-              {isSaving ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-4 h-4 border-1.5 border-white border-t-transparent rounded-full"
-                />
-              ) : (
-                <>
-                  <Save size={14} className="inline mr-2" />
-                  {t('save')}
-                </>
-              )}
-            </motion.button>
           </motion.div>
         </div>
-        
+
+        {/* Mobile Status Indicator (Below navbar on mobile) */}
+        <div className="lg:hidden px-4 sm:px-6 py-2 border-t border-gray-100">
+          <StatusIndicator isSaving={isSaving} lastSaved={lastSaved} />
+        </div>
       </nav>
 
       {/* Settings Modal */}
@@ -570,7 +666,6 @@ const {previewOpen,setPreviewOpen} = useUIStore();
         title="Form Settings"
         size="md"
       >
-        <LanguageSwitcher/>
         <SettingsForm form={form} onUpdate={handleSettingsUpdate} />
       </Modal>
     </>
