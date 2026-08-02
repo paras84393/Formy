@@ -2,146 +2,217 @@ import React, { useState } from 'react';
 import { useFormStore } from '@/store/formStore';
 import { useEditorStore } from '@/store/editorStore';
 import { FieldRenderer } from '@/components/fields/FieldRenderer';
-import { motion } from 'framer-motion';
-import { Cross, Eye, EyeOff , X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 import { useUIStore } from "@/store/uiStore";
-
 import { useTranslation } from 'react-i18next';
-import { Button } from '../common/Button';
 
 export const LivePreview: React.FC = () => {
   const form = useFormStore((state) => state.getCurrentForm());
   const { formValues, setFieldValue } = useEditorStore();
-  const [isExpanded, setIsExpanded] = useState(true);
-  const { previewOpen,setPreviewOpen } = useUIStore();
-  const {t} = useTranslation();
+  const { previewOpen, setPreviewOpen } = useUIStore();
+  const { t } = useTranslation();
+
   if (!form) {
-    return (
-      <aside className="w-96 bg-white  p-6 overflow-y-auto flex items-center justify-center">
-        <p className="text-gray-500 text-center">Select a form to see preview</p>
-      </aside>
-    );
+    return null;
   }
 
   return (
-    <aside className={`${isExpanded ? 'w-96' : 'w-12'} bg-white  overflow-visible transition-all duration-300`}>
-      {/* Toggle Button */}
-
-  
-      <button
-       
-        onClick={() => setPreviewOpen(false)}
-        className=" -left-6 top-8 bg-white  p-1 rounded-lg "
-        title={isExpanded ? 'Hide preview' : 'Show preview'}
-      >
-        {isExpanded ? <X size={38} className='bg-black text-white rounded-full'/> : <Eye size={16} />}
-      </button>
-
-      {isExpanded && (
-        <div className="h-full overflow-y-auto">
-          {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-white p-4 z-10">
-            <h3 className="text-sm font-bold text-gray-900"> {t("livePreview")}</h3>
-            <p className="text-xs text-gray-500 mt-1">See changes in real-time</p>
-            <div className="flex items-center justify-between p-3 border-b">
-    <h3 className="font-semibold">
-       {t("livePreview")}
-    </h3>
-
-   
-    
-</div>
-          </div>
-
-          {/* Preview Content */}
-          <div className="p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="bg-gray-50 rounded-lg p-6 min-h-screen"
-            >
-              {/* Form Header */}
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  {form.title || t('untitledForm')}
-                </h1>
-                {form.description && (
-                  <p className="text-gray-600 text-sm">{form.description}</p>
-                )}
-       {/* Header */}
-<div className="mb-16">
-  <div className="relative">
-    {/* Cover Image */}
-    {form.coverImage && (
-      <div className="overflow-hidden rounded-2xl">
-        <img
-          src={form.coverImage}
-          alt="Cover"
-          className="w-full h-56 object-cover"
-        />
-      </div>
-    )}
-
-    {/* Floating Logo */}
-    {form.logo && (
-      <div className="absolute left-8 -bottom-12">
-        <div className="w-20 h-20 rounded-full bg-white p-1 shadow-xl">
-          <img
-            src={form.logo}
-            alt="Logo"
-            className="w-full h-full rounded-full object-cover"
+    <AnimatePresence>
+      {previewOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setPreviewOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
           />
-        </div>
-      </div>
-    )}
-  </div>
 
-  {/* Space for overlapping logo */}
-  {form.logo && <div className="h-12" />}
-</div>
-                  
-              </div>
+          {/* Drawer from Bottom */}
+         <motion.div
+  initial={{
+    x: typeof window !== "undefined" && window.innerWidth >= 1024 ? "100%" : 0,
+    y: typeof window !== "undefined" && window.innerWidth < 1024 ? "100%" : 0,
+  }}
+  animate={{
+    x: 0,
+    y: 0,
+  }}
+  exit={{
+    x: typeof window !== "undefined" && window.innerWidth >= 1024 ? "100%" : 0,
+    y: typeof window !== "undefined" && window.innerWidth < 1024 ? "100%" : 0,
+  }}
+  transition={{
+    type: "spring",
+    damping: 25,
+    stiffness: 220,
+  }}
+           className="
+fixed z-50 bg-white overflow-hidden shadow-2xl
 
-              {/* Fields Preview */}
-              <div className="space-y-4">
-                {form.fields.map((field) => (
-                  <motion.div
-                    key={field.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white p-4 rounded-lg"
-                  >
-                    <FieldRenderer
-                      field={field}
-                      value={formValues[field.id]}
-                      onChange={(value) => setFieldValue(field.id, value)}
-                      isEditing={false}
-                    />
-                  </motion.div>
-                ))}
-              </div>
+bottom-0 left-0 right-0
+rounded-t-3xl
+max-h-[90vh]
 
-              {/* Submit Button */}
-              {form.fields.length > 0 && (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full mt-6 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {t("submit")}
-                </motion.button>
-              )}
-
-              {/* Empty State */}
-              {form.fields.length === 0 && (
-                <div className="text-center py-12 text-gray-400">
-                  <p>No fields added yet</p>
+lg:top-0
+lg:right-0
+lg:left-auto
+lg:bottom-0
+lg:h-screen
+lg:w-[480px]
+lg:max-h-none
+lg:rounded-none
+lg:border-l
+"
+          >
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {t("livePreview")}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {t("seeChangesInRealTime", "Changes update instantly")}
+                  </p>
                 </div>
-              )}
-            </motion.div>
-          </div>
-        </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setPreviewOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Close preview"
+                >
+                  <X size={24} className="text-gray-600" />
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="
+overflow-y-auto
+max-h-[calc(90vh-80px)]
+lg:max-h-none
+lg:h-[calc(100vh-80px)]
+">
+              <div className="p-6 max-w-2xl mx-auto">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="bg-white rounded-3xl p-8 space-y-6"
+                >
+                  {/* Cover Image */}
+                  {form.coverImage && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="relative w-full h-40 overflow-hidden rounded-2xl"
+                    >
+                      <img
+                        src={form.coverImage}
+                        alt="Cover"
+                        className="w-full h-full object-cover"
+                      />
+                    </motion.div>
+                  )}
+
+                  {/* Logo & Title */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 0.1 }}
+                    className="flex items-center gap-3"
+                  >
+                    {form.logo && (
+                      <img
+                        src={form.logo}
+                        alt="Logo"
+                        className="w-12 h-12 rounded-lg object-cover"
+                      />
+                    )}
+                    <div>
+                      <h1 className="text-2xl font-bold text-gray-900">
+                        {form.title || t('untitledForm')}
+                      </h1>
+                    </div>
+                  </motion.div>
+
+                  {/* Description */}
+                  {form.description && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: 0.15 }}
+                      className="text-gray-600 text-sm leading-relaxed"
+                    >
+                      {form.description}
+                    </motion.p>
+                  )}
+
+                  {/* Fields Preview */}
+                  {form.fields.length > 0 ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                      className="space-y-4"
+                    >
+                      {form.fields.map((field, index) => (
+                        <motion.div
+                          key={field.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2, delay: index * 0.05 }}
+                        >
+                          <FieldRenderer
+                            field={field}
+                            value={formValues[field.id]}
+                            onChange={(value) => setFieldValue(field.id, value)}
+                            isEditing={false}
+                          />
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                      className="flex items-center justify-center py-12"
+                    >
+                      <p className="text-gray-400 text-center">
+                        {t("noFieldsAdded", "No fields added yet")}
+                      </p>
+                    </motion.div>
+                  )}
+
+                  {/* Submit Button */}
+                  {form.fields.length > 0 && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: 0.25 }}
+                      className="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-900 transition-all duration-200"
+                    >
+                      {t("submit")}
+                    </motion.button>
+                  )}
+                </motion.div>
+
+                {/* Bottom Padding */}
+                <div className="h-6" />
+              </div>
+            </div>
+          </motion.div>
+        </>
       )}
-    </aside>
+    </AnimatePresence>
   );
 };

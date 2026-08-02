@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useFormStore } from '@/store/formStore';
 import { useUIStore } from '@/store/uiStore';
 import { HomePage } from '@/pages/HomePage';
-import { BuilderPage } from '@/pages/BuilderPage';
+import { BuilderPage } from '@/services/BuilderPage';
 import { PreviewPage } from '@/pages/PriviewPage';
 import { ResponsesPage } from '@/pages/ResponsesPage';
 import { NotFound } from '@/pages/NotFound';

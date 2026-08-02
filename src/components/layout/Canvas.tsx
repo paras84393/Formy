@@ -1099,7 +1099,7 @@ export const Canvas: React.FC = () => {
                         newField.label = field.label;
                         addField(currentFormId, newField);
                       }}
-                      className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm hover:bg-gray-100 transition-colors"
+                      className="rounded-full border border-gray-200 bg-white text-black px-3 py-1.5 text-sm hover:bg-gray-100 transition-colors"
                     >
                       + {field.label}
                     </motion.button>
