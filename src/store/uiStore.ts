@@ -22,7 +22,7 @@ interface UIStore {
 export const useUIStore = create<UIStore>((set) => ({
   selectedFieldId: null,
   sidebarOpen: true,
-  previewOpen: true,
+  previewOpen: false,
   showAddFieldMenu: false,
   toastMessage: null,
   toastType: 'info',

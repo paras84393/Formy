@@ -819,7 +819,7 @@ const CanvasEmptyState: React.FC<{
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="flex flex-col items-center justify-center py-32"
+      className="flex flex-col items-center justify-center py-3"
     >
       <div className="max-w-lg text-center">
         <motion.div
