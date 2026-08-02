@@ -1004,6 +1004,7 @@ export const Canvas: React.FC = () => {
   if (!form) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[#FAFAFA]">
+        
         <div className="text-center space-y-3">
           <p className="text-lg text-gray-600 font-medium">
             {t("createOrSelect") || "Create or select a form"}
@@ -1031,6 +1032,7 @@ export const Canvas: React.FC = () => {
           ${isOver ? 'bg-blue-50' : 'bg-white'}
         `}
       >
+        
         <div className="min-h-full p-12 bg-white flex items-start justify-center">
           <div className="w-full max-w-2xl">
             {/* Header */}
@@ -1086,6 +1088,8 @@ export const Canvas: React.FC = () => {
                   </motion.button>
                 </div>
 
+                
+
                 <div className="flex flex-wrap gap-2">
                   {suggestion.fields.map((field) => (
                     <motion.button
@@ -1109,14 +1113,7 @@ export const Canvas: React.FC = () => {
             )}
 
             {/* Keyboard Shortcut Hint */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-              className="mb-6 text-xs font-medium text-gray-500 text-center"
-            >
-              Press <kbd className="px-2 py-1 rounded bg-gray-100 border border-gray-300">/</kbd> to add a field
-            </motion.div>
+           
 
             {/* Fields or Empty State */}
             {form.fields.length === 0 ? (
@@ -1139,6 +1136,14 @@ export const Canvas: React.FC = () => {
                     initial="initial"
                     animate="animate"
                   >
+                     <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+              className="mb-6 text-xs font-medium text-gray-500 text-center"
+            >
+              Press <kbd className="px-2 py-1 rounded bg-gray-100 border border-gray-300">/</kbd> to add a field
+            </motion.div>
                     <AnimatePresence mode="popLayout">
                       {form.fields.map((field, index) => (
                         <CanvasField
