@@ -17,6 +17,8 @@ import { useTranslation } from 'react-i18next';
 export const Layout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const {previewOpen,setPreviewOpen} = useUIStore();
+  const isDesktop =
+  typeof window !== "undefined" && window.innerWidth >= 1024;
   
   const {t} = useTranslation();
   return (
