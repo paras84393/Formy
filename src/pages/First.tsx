@@ -40,7 +40,7 @@ const Navigation: React.FC = () => {
           <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center">
             <span className="text-white font-bold text-sm">F</span>
           </div>
-          <span className="text-lg font-bold text-gray-900">Formy</span>
+          <span className="text-lg font-bold text-gray-900">formy</span>
         </motion.div>
 
         <div className="hidden md:flex items-center gap-8">
