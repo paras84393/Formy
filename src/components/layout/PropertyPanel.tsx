@@ -225,6 +225,60 @@ export const PropertyPanel: React.FC = () => {
                 </label>
               </div>
 
+              {/* Design Settings */}
+<motion.div
+  initial={false}
+  className="border border-gray-200 rounded-lg overflow-hidden"
+>
+  <button
+    onClick={() => toggleSection("advanced")}
+    className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
+  >
+    <span className="text-sm font-semibold text-gray-900">
+      Design
+    </span>
+
+    <ChevronDown
+      size={16}
+      className={`transition-transform ${
+        expandedSections.advanced ? "rotate-180" : ""
+      }`}
+    />
+  </button>
+
+  {expandedSections.advanced && (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      className="border-t border-gray-200 p-3 space-y-3"
+    >
+      <button className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 transition">
+         Theme Color
+      </button>
+
+      <button className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 transition">
+         Background
+      </button>
+
+      <button className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 transition">
+         Button Style
+      </button>
+
+      <button className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 transition">
+         Font
+      </button>
+
+      <button className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 transition">
+         Border Radius
+      </button>
+
+      <button className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 transition">
+        Dark Mode
+      </button>
+    </motion.div>
+  )}
+</motion.div>
+
               {/* Column Span */}
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
